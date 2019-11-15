@@ -1,0 +1,1016 @@
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ir.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.bss.rxCommand,"aw",%nobits
+  18              		.align	2
+  21              	rxCommand:
+  22 0000 00000000 		.space	4
+  23              		.section	.bss.rxState,"aw",%nobits
+  26              	rxState:
+  27 0000 00       		.space	1
+  28              		.section	.text.irProcessReceiveStateMachine,"ax",%progbits
+  29              		.align	1
+  30              		.global	irProcessReceiveStateMachine
+  31              		.syntax unified
+  32              		.thumb
+  33              		.thumb_func
+  34              		.fpu fpv4-sp-d16
+  36              	irProcessReceiveStateMachine:
+  37              	.LFB125:
+  38              		.file 1 "../Sources/utils/ir.c"
+   1:../Sources/utils/ir.c **** /**
+   2:../Sources/utils/ir.c ****  *--------------------------------------------------------------------\n
+   3:../Sources/utils/ir.c ****  *          HSLU T&A Hochschule Luzern Technik+Architektur            \n
+   4:../Sources/utils/ir.c ****  *--------------------------------------------------------------------\n
+   5:../Sources/utils/ir.c ****  *
+   6:../Sources/utils/ir.c ****  * \brief         Infrared Remote Control driver
+   7:../Sources/utils/ir.c ****  * \file
+   8:../Sources/utils/ir.c ****  * \author        Christian Jost, christian.jost@hslu.ch
+   9:../Sources/utils/ir.c ****  * \date          03.04.20018
+  10:../Sources/utils/ir.c ****  *
+  11:../Sources/utils/ir.c ****  * $Id: ir.c 83 2018-04-11 12:20:43Z zajost $
+  12:../Sources/utils/ir.c ****  *
+  13:../Sources/utils/ir.c ****  *--------------------------------------------------------------------
+  14:../Sources/utils/ir.c ****  */
+  15:../Sources/utils/ir.c **** 
+  16:../Sources/utils/ir.c **** #include "platform.h"
+  17:../Sources/utils/ir.c **** #include "ftm0.h"
+  18:../Sources/utils/ir.c **** #include "ir.h"
+  19:../Sources/utils/ir.c **** 
+  20:../Sources/utils/ir.c **** 
+  21:../Sources/utils/ir.c **** /**
+  22:../Sources/utils/ir.c ****  * Sets a bit of the @ref rxBuf to '1'
+  23:../Sources/utils/ir.c ****  *
+  24:../Sources/utils/ir.c ****  * @param[in] buf
+  25:../Sources/utils/ir.c ****  *      the desired buffer to set the bit
+  26:../Sources/utils/ir.c ****  * @param[in] bytePos
+  27:../Sources/utils/ir.c ****  *      the desired byte [0..(rxBufSize - 1)]
+  28:../Sources/utils/ir.c ****  * @param[in] bitPos
+  29:../Sources/utils/ir.c ****  *      the desired bit [0...7]
+  30:../Sources/utils/ir.c ****  */
+  31:../Sources/utils/ir.c **** #define SetRxBit(buf, bytePos, bitPos)      (buf[bytePos] |= (1 << bitPos))
+  32:../Sources/utils/ir.c **** 
+  33:../Sources/utils/ir.c **** /**
+  34:../Sources/utils/ir.c ****  * Sets a bit of the @ref rxBuf to '0'
+  35:../Sources/utils/ir.c ****  *
+  36:../Sources/utils/ir.c ****  * @param[in] buf
+  37:../Sources/utils/ir.c ****  *      the desired buffer to clear the bit
+  38:../Sources/utils/ir.c ****  * @param[in] bytePos
+  39:../Sources/utils/ir.c ****  *      the desired byte [0..(rxBufSize - 1)]
+  40:../Sources/utils/ir.c ****  * @param[in] bitPos
+  41:../Sources/utils/ir.c ****  *      the desired bit [0...7]
+  42:../Sources/utils/ir.c ****  */
+  43:../Sources/utils/ir.c **** #define ClearRxBit(buf, bytePos, bitPos)    (buf[bytePos] &= ~(1 << bitPos))
+  44:../Sources/utils/ir.c **** 
+  45:../Sources/utils/ir.c **** 
+  46:../Sources/utils/ir.c **** typedef enum
+  47:../Sources/utils/ir.c **** {
+  48:../Sources/utils/ir.c ****   rxIdle,
+  49:../Sources/utils/ir.c ****   rxReceiving,
+  50:../Sources/utils/ir.c ****   rxReceived
+  51:../Sources/utils/ir.c **** } rxStates;
+  52:../Sources/utils/ir.c **** 
+  53:../Sources/utils/ir.c **** typedef enum
+  54:../Sources/utils/ir.c **** {
+  55:../Sources/utils/ir.c ****   rxStartBit,
+  56:../Sources/utils/ir.c ****   rxRStartBit,
+  57:../Sources/utils/ir.c ****   rx1Bit,
+  58:../Sources/utils/ir.c ****   rx0Bit
+  59:../Sources/utils/ir.c **** } rxBits;
+  60:../Sources/utils/ir.c **** 
+  61:../Sources/utils/ir.c **** typedef union
+  62:../Sources/utils/ir.c **** {
+  63:../Sources/utils/ir.c ****   uint8_t buf[4];
+  64:../Sources/utils/ir.c ****   struct
+  65:../Sources/utils/ir.c ****   {
+  66:../Sources/utils/ir.c ****     uint16_t adr;
+  67:../Sources/utils/ir.c ****     uint8_t cmd;
+  68:../Sources/utils/ir.c ****     uint8_t cmdN;
+  69:../Sources/utils/ir.c ****   } cmd;
+  70:../Sources/utils/ir.c **** } tCommand;
+  71:../Sources/utils/ir.c **** 
+  72:../Sources/utils/ir.c **** #define rxBuf     (rxCommand.buf)
+  73:../Sources/utils/ir.c **** static tCommand rxCommand;
+  74:../Sources/utils/ir.c **** static rxStates rxState;
+  75:../Sources/utils/ir.c **** 
+  76:../Sources/utils/ir.c **** 
+  77:../Sources/utils/ir.c **** /**
+  78:../Sources/utils/ir.c ****  * This function processes the state machine to receive an IR-command.
+  79:../Sources/utils/ir.c ****  * After every measurement of a pulse and the following pause this
+  80:../Sources/utils/ir.c ****  * function has to be called.
+  81:../Sources/utils/ir.c ****  *
+  82:../Sources/utils/ir.c ****  * @param[in] pulse
+  83:../Sources/utils/ir.c ****  *   the pulse time in timer ticks
+  84:../Sources/utils/ir.c ****  * @param[in] pause
+  85:../Sources/utils/ir.c ****  *   the pause time in timer ticks
+  86:../Sources/utils/ir.c ****  */
+  87:../Sources/utils/ir.c **** void irProcessReceiveStateMachine(uint16_t pulse, uint16_t pause)
+  88:../Sources/utils/ir.c **** {
+  39              		.loc 1 88 0
+  40              		.cfi_startproc
+  41              		@ args = 0, pretend = 0, frame = 16
+  42              		@ frame_needed = 1, uses_anonymous_args = 0
+  43              		@ link register save eliminated.
+  44 0000 80B4     		push	{r7}
+  45              		.cfi_def_cfa_offset 4
+  46              		.cfi_offset 7, -4
+  47 0002 85B0     		sub	sp, sp, #20
+  48              		.cfi_def_cfa_offset 24
+  49 0004 00AF     		add	r7, sp, #0
+  50              		.cfi_def_cfa_register 7
+  51 0006 0346     		mov	r3, r0
+  52 0008 0A46     		mov	r2, r1
+  53 000a FB80     		strh	r3, [r7, #6]	@ movhi
+  54 000c 1346     		mov	r3, r2	@ movhi
+  55 000e BB80     		strh	r3, [r7, #4]	@ movhi
+  89:../Sources/utils/ir.c ****   static uint8_t bitPos = 0;
+  90:../Sources/utils/ir.c ****   static uint8_t bytePos = 0;
+  91:../Sources/utils/ir.c ****   rxBits rxBit;
+  92:../Sources/utils/ir.c **** 
+  93:../Sources/utils/ir.c ****   // determine the right bit based on the pulse/pause time:
+  94:../Sources/utils/ir.c ****   // startbit, repeated startbit, '1' or '0'
+  95:../Sources/utils/ir.c ****   if (pulse > PULSE_LEN_MIN && pulse < PULSE_LEN_MAX) // pulse ~560us
+  56              		.loc 1 95 0
+  57 0010 FB88     		ldrh	r3, [r7, #6]
+  58 0012 612B     		cmp	r3, #97
+  59 0014 16DD     		ble	.L2
+  60              		.loc 1 95 0 is_stmt 0 discriminator 1
+  61 0016 FB88     		ldrh	r3, [r7, #6]
+  62 0018 B42B     		cmp	r3, #180
+  63 001a 13DC     		bgt	.L2
+  96:../Sources/utils/ir.c ****   {
+  97:../Sources/utils/ir.c ****     if (pause > PAUSE_0_LEN_MIN && pause < PAUSE_0_LEN_MAX) rxBit = rx0Bit;     // pause ~560us
+  64              		.loc 1 97 0 is_stmt 1
+  65 001c BB88     		ldrh	r3, [r7, #4]
+  66 001e 612B     		cmp	r3, #97
+  67 0020 05DD     		ble	.L3
+  68              		.loc 1 97 0 is_stmt 0 discriminator 1
+  69 0022 BB88     		ldrh	r3, [r7, #4]
+  70 0024 B42B     		cmp	r3, #180
+  71 0026 02DC     		bgt	.L3
+  72              		.loc 1 97 0 discriminator 2
+  73 0028 0323     		movs	r3, #3
+  74 002a FB73     		strb	r3, [r7, #15]
+  75 002c 2CE0     		b	.L20
+  76              	.L3:
+  98:../Sources/utils/ir.c ****     else if (pause > PAUSE_1_LEN_MIN && pause < PAUSE_1_LEN_MAX)rxBit = rx1Bit; // pause ~1690us
+  77              		.loc 1 98 0 is_stmt 1
+  78 002e BB88     		ldrh	r3, [r7, #4]
+  79 0030 B3F5947F 		cmp	r3, #296
+  80 0034 28DB     		blt	.L20
+  81              		.loc 1 98 0 is_stmt 0 discriminator 1
+  82 0036 BB88     		ldrh	r3, [r7, #4]
+  83 0038 B3F5097F 		cmp	r3, #548
+  84 003c 24DA     		bge	.L20
+  85              		.loc 1 98 0 discriminator 2
+  86 003e 0223     		movs	r3, #2
+  87 0040 FB73     		strb	r3, [r7, #15]
+  97:../Sources/utils/ir.c ****     else if (pause > PAUSE_1_LEN_MIN && pause < PAUSE_1_LEN_MAX)rxBit = rx1Bit; // pause ~1690us
+  88              		.loc 1 97 0 is_stmt 1 discriminator 2
+  89 0042 21E0     		b	.L20
+  90              	.L2:
+  99:../Sources/utils/ir.c ****   }
+ 100:../Sources/utils/ir.c ****   else if (pulse > START_BIT_PULSE_LEN_MIN && pulse < START_BIT_PULSE_LEN_MAX) // pulse ~9ms
+  91              		.loc 1 100 0
+  92 0044 FB88     		ldrh	r3, [r7, #6]
+  93 0046 40F22662 		movw	r2, #1574
+  94 004a 9342     		cmp	r3, r2
+  95 004c 1DDD     		ble	.L5
+  96              		.loc 1 100 0 is_stmt 0 discriminator 1
+  97 004e FB88     		ldrh	r3, [r7, #6]
+  98 0050 40F66B32 		movw	r2, #2923
+  99 0054 9342     		cmp	r3, r2
+ 100 0056 18DC     		bgt	.L5
+ 101:../Sources/utils/ir.c ****   {
+ 102:../Sources/utils/ir.c ****     if (pause > START_BIT_PAUSE_LEN_MIN && pause < START_BIT_PAUSE_LEN_MAX) rxBit = rxStartBit;    
+ 101              		.loc 1 102 0 is_stmt 1
+ 102 0058 BB88     		ldrh	r3, [r7, #4]
+ 103 005a B3F5457F 		cmp	r3, #788
+ 104 005e 07DB     		blt	.L6
+ 105              		.loc 1 102 0 is_stmt 0 discriminator 1
+ 106 0060 BB88     		ldrh	r3, [r7, #4]
+ 107 0062 40F2B552 		movw	r2, #1461
+ 108 0066 9342     		cmp	r3, r2
+ 109 0068 02DC     		bgt	.L6
+ 110              		.loc 1 102 0 discriminator 2
+ 111 006a 0023     		movs	r3, #0
+ 112 006c FB73     		strb	r3, [r7, #15]
+ 113 006e 0CE0     		b	.L5
+ 114              	.L6:
+ 103:../Sources/utils/ir.c ****     else if (pause > RSTART_BIT_PAUSE_LEN_MIN && pause < RSTART_BIT_PAUSE_LEN_MAX) rxBit = rxRStart
+ 115              		.loc 1 103 0 is_stmt 1
+ 116 0070 BB88     		ldrh	r3, [r7, #4]
+ 117 0072 B3F5C57F 		cmp	r3, #394
+ 118 0076 08DB     		blt	.L5
+ 119              		.loc 1 103 0 is_stmt 0 discriminator 1
+ 120 0078 BB88     		ldrh	r3, [r7, #4]
+ 121 007a 40F2D922 		movw	r2, #729
+ 122 007e 9342     		cmp	r3, r2
+ 123 0080 03DC     		bgt	.L5
+ 124              		.loc 1 103 0 discriminator 2
+ 125 0082 0123     		movs	r3, #1
+ 126 0084 FB73     		strb	r3, [r7, #15]
+ 127 0086 00E0     		b	.L5
+ 128              	.L20:
+  97:../Sources/utils/ir.c ****     else if (pause > PAUSE_1_LEN_MIN && pause < PAUSE_1_LEN_MAX)rxBit = rx1Bit; // pause ~1690us
+ 129              		.loc 1 97 0 is_stmt 1
+ 130 0088 00BF     		nop
+ 131              	.L5:
+ 104:../Sources/utils/ir.c ****   }
+ 105:../Sources/utils/ir.c **** 
+ 106:../Sources/utils/ir.c ****   switch (rxState)
+ 132              		.loc 1 106 0
+ 133 008a 444B     		ldr	r3, .L24
+ 134 008c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 135 008e 012B     		cmp	r3, #1
+ 136 0090 11D0     		beq	.L8
+ 137 0092 022B     		cmp	r3, #2
+ 138 0094 76D0     		beq	.L21
+ 139 0096 002B     		cmp	r3, #0
+ 140 0098 70D1     		bne	.L19
+ 107:../Sources/utils/ir.c ****   {
+ 108:../Sources/utils/ir.c ****   case rxIdle:                                  // idle state
+ 109:../Sources/utils/ir.c ****     if (rxBit == rxStartBit) {                  // wait until a valid StartBit has been received
+ 141              		.loc 1 109 0
+ 142 009a FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 143 009c 002B     		cmp	r3, #0
+ 144 009e 73D1     		bne	.L22
+ 110:../Sources/utils/ir.c ****       bitPos = bytePos = 0;                     // startbit received => reset buffer index variable
+ 145              		.loc 1 110 0
+ 146 00a0 3F4B     		ldr	r3, .L24+4
+ 147 00a2 0022     		movs	r2, #0
+ 148 00a4 1A70     		strb	r2, [r3]
+ 149 00a6 3E4B     		ldr	r3, .L24+4
+ 150 00a8 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 151 00aa 3E4B     		ldr	r3, .L24+8
+ 152 00ac 1A70     		strb	r2, [r3]
+ 111:../Sources/utils/ir.c ****       rxState = rxReceiving;                    // and change to the rxReceiving state
+ 153              		.loc 1 111 0
+ 154 00ae 3B4B     		ldr	r3, .L24
+ 155 00b0 0122     		movs	r2, #1
+ 156 00b2 1A70     		strb	r2, [r3]
+ 112:../Sources/utils/ir.c ****     }
+ 113:../Sources/utils/ir.c ****     else if (rxBit == rxRStartBit) { }          // Repeated Start is ignored (not implemented)
+ 114:../Sources/utils/ir.c ****     break;
+ 157              		.loc 1 114 0
+ 158 00b4 68E0     		b	.L22
+ 159              	.L8:
+ 115:../Sources/utils/ir.c **** 
+ 116:../Sources/utils/ir.c ****   case rxReceiving:                                 // receiving state
+ 117:../Sources/utils/ir.c ****     if (rxBit==rxStartBit || rxBit==rxRStartBit) {  // startbit during receiving is an error
+ 160              		.loc 1 117 0
+ 161 00b6 FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 162 00b8 002B     		cmp	r3, #0
+ 163 00ba 02D0     		beq	.L13
+ 164              		.loc 1 117 0 is_stmt 0 discriminator 1
+ 165 00bc FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 166 00be 012B     		cmp	r3, #1
+ 167 00c0 07D1     		bne	.L14
+ 168              	.L13:
+ 118:../Sources/utils/ir.c ****       bitPos = bytePos = 0;                         // => reset buffer index variables
+ 169              		.loc 1 118 0 is_stmt 1
+ 170 00c2 374B     		ldr	r3, .L24+4
+ 171 00c4 0022     		movs	r2, #0
+ 172 00c6 1A70     		strb	r2, [r3]
+ 173 00c8 354B     		ldr	r3, .L24+4
+ 174 00ca 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 175 00cc 354B     		ldr	r3, .L24+8
+ 176 00ce 1A70     		strb	r2, [r3]
+ 119:../Sources/utils/ir.c ****     }
+ 120:../Sources/utils/ir.c ****     else {
+ 121:../Sources/utils/ir.c ****       if (rxBit == rx1Bit) SetRxBit(rxBuf, bytePos, bitPos);  // '1' received => set '1' in the rec
+ 122:../Sources/utils/ir.c ****       else ClearRxBit(rxBuf, bytePos, bitPos);                // '0' receifed => set '0' in the rec
+ 123:../Sources/utils/ir.c **** 
+ 124:../Sources/utils/ir.c ****       if (++bitPos > 7) {                           // 8 bits received => byte is full, process nex
+ 125:../Sources/utils/ir.c ****         bitPos = 0;                                 // bitpos of the next byte is 0
+ 126:../Sources/utils/ir.c ****         bytePos++;                                  // process next byte
+ 127:../Sources/utils/ir.c ****         if (bytePos >= 4) {                         // if 4 bytes has been received => finished
+ 128:../Sources/utils/ir.c ****           if ((rxCommand.cmd.cmd ^ rxCommand.cmd.cmdN) == 0xff) rxState = rxReceived;
+ 129:../Sources/utils/ir.c ****           else rxState = rxIdle;                    // more than 4 bytes? => Error => wait in idle 
+ 130:../Sources/utils/ir.c ****         }
+ 131:../Sources/utils/ir.c ****       }
+ 132:../Sources/utils/ir.c ****     }
+ 133:../Sources/utils/ir.c ****     break;
+ 177              		.loc 1 133 0
+ 178 00d0 5CE0     		b	.L23
+ 179              	.L14:
+ 121:../Sources/utils/ir.c ****       else ClearRxBit(rxBuf, bytePos, bitPos);                // '0' receifed => set '0' in the rec
+ 180              		.loc 1 121 0
+ 181 00d2 FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 182 00d4 022B     		cmp	r3, #2
+ 183 00d6 14D1     		bne	.L16
+ 121:../Sources/utils/ir.c ****       else ClearRxBit(rxBuf, bytePos, bitPos);                // '0' receifed => set '0' in the rec
+ 184              		.loc 1 121 0 is_stmt 0 discriminator 1
+ 185 00d8 314B     		ldr	r3, .L24+4
+ 186 00da 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 187 00dc 1946     		mov	r1, r3
+ 188 00de 304B     		ldr	r3, .L24+4
+ 189 00e0 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 190 00e2 1A46     		mov	r2, r3
+ 191 00e4 304B     		ldr	r3, .L24+12
+ 192 00e6 9B5C     		ldrb	r3, [r3, r2]	@ zero_extendqisi2
+ 193 00e8 5AB2     		sxtb	r2, r3
+ 194 00ea 2E4B     		ldr	r3, .L24+8
+ 195 00ec 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 196 00ee 1846     		mov	r0, r3
+ 197 00f0 0123     		movs	r3, #1
+ 198 00f2 8340     		lsls	r3, r3, r0
+ 199 00f4 5BB2     		sxtb	r3, r3
+ 200 00f6 1343     		orrs	r3, r3, r2
+ 201 00f8 5BB2     		sxtb	r3, r3
+ 202 00fa DAB2     		uxtb	r2, r3
+ 203 00fc 2A4B     		ldr	r3, .L24+12
+ 204 00fe 5A54     		strb	r2, [r3, r1]
+ 205 0100 15E0     		b	.L17
+ 206              	.L16:
+ 122:../Sources/utils/ir.c **** 
+ 207              		.loc 1 122 0 is_stmt 1
+ 208 0102 274B     		ldr	r3, .L24+4
+ 209 0104 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 210 0106 1946     		mov	r1, r3
+ 211 0108 254B     		ldr	r3, .L24+4
+ 212 010a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 213 010c 1A46     		mov	r2, r3
+ 214 010e 264B     		ldr	r3, .L24+12
+ 215 0110 9B5C     		ldrb	r3, [r3, r2]	@ zero_extendqisi2
+ 216 0112 5AB2     		sxtb	r2, r3
+ 217 0114 234B     		ldr	r3, .L24+8
+ 218 0116 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 219 0118 1846     		mov	r0, r3
+ 220 011a 0123     		movs	r3, #1
+ 221 011c 8340     		lsls	r3, r3, r0
+ 222 011e 5BB2     		sxtb	r3, r3
+ 223 0120 DB43     		mvns	r3, r3
+ 224 0122 5BB2     		sxtb	r3, r3
+ 225 0124 1340     		ands	r3, r3, r2
+ 226 0126 5BB2     		sxtb	r3, r3
+ 227 0128 DAB2     		uxtb	r2, r3
+ 228 012a 1F4B     		ldr	r3, .L24+12
+ 229 012c 5A54     		strb	r2, [r3, r1]
+ 230              	.L17:
+ 124:../Sources/utils/ir.c ****         bitPos = 0;                                 // bitpos of the next byte is 0
+ 231              		.loc 1 124 0
+ 232 012e 1D4B     		ldr	r3, .L24+8
+ 233 0130 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 234 0132 0133     		adds	r3, r3, #1
+ 235 0134 DAB2     		uxtb	r2, r3
+ 236 0136 1B4B     		ldr	r3, .L24+8
+ 237 0138 1A70     		strb	r2, [r3]
+ 238 013a 1A4B     		ldr	r3, .L24+8
+ 239 013c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 240 013e 072B     		cmp	r3, #7
+ 241 0140 24D9     		bls	.L23
+ 125:../Sources/utils/ir.c ****         bytePos++;                                  // process next byte
+ 242              		.loc 1 125 0
+ 243 0142 184B     		ldr	r3, .L24+8
+ 244 0144 0022     		movs	r2, #0
+ 245 0146 1A70     		strb	r2, [r3]
+ 126:../Sources/utils/ir.c ****         if (bytePos >= 4) {                         // if 4 bytes has been received => finished
+ 246              		.loc 1 126 0
+ 247 0148 154B     		ldr	r3, .L24+4
+ 248 014a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 249 014c 0133     		adds	r3, r3, #1
+ 250 014e DAB2     		uxtb	r2, r3
+ 251 0150 134B     		ldr	r3, .L24+4
+ 252 0152 1A70     		strb	r2, [r3]
+ 127:../Sources/utils/ir.c ****           if ((rxCommand.cmd.cmd ^ rxCommand.cmd.cmdN) == 0xff) rxState = rxReceived;
+ 253              		.loc 1 127 0
+ 254 0154 124B     		ldr	r3, .L24+4
+ 255 0156 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 256 0158 032B     		cmp	r3, #3
+ 257 015a 17D9     		bls	.L23
+ 128:../Sources/utils/ir.c ****           else rxState = rxIdle;                    // more than 4 bytes? => Error => wait in idle 
+ 258              		.loc 1 128 0
+ 259 015c 124B     		ldr	r3, .L24+12
+ 260 015e 9A78     		ldrb	r2, [r3, #2]	@ zero_extendqisi2
+ 261 0160 114B     		ldr	r3, .L24+12
+ 262 0162 DB78     		ldrb	r3, [r3, #3]	@ zero_extendqisi2
+ 263 0164 5340     		eors	r3, r3, r2
+ 264 0166 DBB2     		uxtb	r3, r3
+ 265 0168 FF2B     		cmp	r3, #255
+ 266 016a 03D1     		bne	.L18
+ 128:../Sources/utils/ir.c ****           else rxState = rxIdle;                    // more than 4 bytes? => Error => wait in idle 
+ 267              		.loc 1 128 0 is_stmt 0 discriminator 1
+ 268 016c 0B4B     		ldr	r3, .L24
+ 269 016e 0222     		movs	r2, #2
+ 270 0170 1A70     		strb	r2, [r3]
+ 271              		.loc 1 133 0 is_stmt 1 discriminator 1
+ 272 0172 0BE0     		b	.L23
+ 273              	.L18:
+ 129:../Sources/utils/ir.c ****         }
+ 274              		.loc 1 129 0
+ 275 0174 094B     		ldr	r3, .L24
+ 276 0176 0022     		movs	r2, #0
+ 277 0178 1A70     		strb	r2, [r3]
+ 278              		.loc 1 133 0
+ 279 017a 07E0     		b	.L23
+ 280              	.L19:
+ 134:../Sources/utils/ir.c **** 
+ 135:../Sources/utils/ir.c ****     case rxReceived: break;                         // IR command received, wait until read with "i
+ 136:../Sources/utils/ir.c ****     default: rxState = rxIdle; break;               // invalid state? => change to idle state
+ 281              		.loc 1 136 0
+ 282 017c 074B     		ldr	r3, .L24
+ 283 017e 0022     		movs	r2, #0
+ 284 0180 1A70     		strb	r2, [r3]
+ 285 0182 04E0     		b	.L12
+ 286              	.L21:
+ 135:../Sources/utils/ir.c ****     default: rxState = rxIdle; break;               // invalid state? => change to idle state
+ 287              		.loc 1 135 0
+ 288 0184 00BF     		nop
+ 289 0186 02E0     		b	.L12
+ 290              	.L22:
+ 114:../Sources/utils/ir.c **** 
+ 291              		.loc 1 114 0
+ 292 0188 00BF     		nop
+ 293 018a 00E0     		b	.L12
+ 294              	.L23:
+ 133:../Sources/utils/ir.c **** 
+ 295              		.loc 1 133 0
+ 296 018c 00BF     		nop
+ 297              	.L12:
+ 137:../Sources/utils/ir.c ****   }
+ 138:../Sources/utils/ir.c **** }
+ 298              		.loc 1 138 0
+ 299 018e 00BF     		nop
+ 300 0190 1437     		adds	r7, r7, #20
+ 301              		.cfi_def_cfa_offset 4
+ 302 0192 BD46     		mov	sp, r7
+ 303              		.cfi_def_cfa_register 13
+ 304              		@ sp needed
+ 305 0194 5DF8047B 		ldr	r7, [sp], #4
+ 306              		.cfi_restore 7
+ 307              		.cfi_def_cfa_offset 0
+ 308 0198 7047     		bx	lr
+ 309              	.L25:
+ 310 019a 00BF     		.align	2
+ 311              	.L24:
+ 312 019c 00000000 		.word	rxState
+ 313 01a0 00000000 		.word	bytePos.6734
+ 314 01a4 00000000 		.word	bitPos.6733
+ 315 01a8 00000000 		.word	rxCommand
+ 316              		.cfi_endproc
+ 317              	.LFE125:
+ 319              		.section	.text.FTM0CH5_IRQHandler,"ax",%progbits
+ 320              		.align	1
+ 321              		.global	FTM0CH5_IRQHandler
+ 322              		.syntax unified
+ 323              		.thumb
+ 324              		.thumb_func
+ 325              		.fpu fpv4-sp-d16
+ 327              	FTM0CH5_IRQHandler:
+ 328              	.LFB126:
+ 139:../Sources/utils/ir.c **** 
+ 140:../Sources/utils/ir.c **** 
+ 141:../Sources/utils/ir.c **** /**
+ 142:../Sources/utils/ir.c ****  * This interrupt service routine measures the pulse and the pause time of the
+ 143:../Sources/utils/ir.c ****  * signal of the infrared receiver.
+ 144:../Sources/utils/ir.c ****  *
+ 145:../Sources/utils/ir.c ****  * After the measurement of a pulse and a pause time, the "irProcessReceiveStateMachine"
+ 146:../Sources/utils/ir.c ****  * is called.
+ 147:../Sources/utils/ir.c ****  */
+ 148:../Sources/utils/ir.c **** void FTM0CH5_IRQHandler(void)
+ 149:../Sources/utils/ir.c **** {
+ 329              		.loc 1 149 0
+ 330              		.cfi_startproc
+ 331              		@ args = 0, pretend = 0, frame = 8
+ 332              		@ frame_needed = 1, uses_anonymous_args = 0
+ 333 0000 80B5     		push	{r7, lr}
+ 334              		.cfi_def_cfa_offset 8
+ 335              		.cfi_offset 7, -8
+ 336              		.cfi_offset 14, -4
+ 337 0002 82B0     		sub	sp, sp, #8
+ 338              		.cfi_def_cfa_offset 16
+ 339 0004 00AF     		add	r7, sp, #0
+ 340              		.cfi_def_cfa_register 7
+ 150:../Sources/utils/ir.c ****   static uint16_t oldTicks = 0;
+ 151:../Sources/utils/ir.c ****   static uint16_t pulse, pause;
+ 152:../Sources/utils/ir.c **** 
+ 153:../Sources/utils/ir.c ****   OnEnterInfraredISR();             // switch on led for debug purposes
+ 341              		.loc 1 153 0
+ 342 0006 1A4B     		ldr	r3, .L29
+ 343 0008 4FF48072 		mov	r2, #256
+ 344 000c 9A60     		str	r2, [r3, #8]
+ 154:../Sources/utils/ir.c ****   FTM0_C5SC &= ~FTM_CnSC_CHF_MASK;  // clear timer channel flag
+ 345              		.loc 1 154 0
+ 346 000e 194A     		ldr	r2, .L29+4
+ 347 0010 184B     		ldr	r3, .L29+4
+ 348 0012 5B6B     		ldr	r3, [r3, #52]
+ 349 0014 23F08003 		bic	r3, r3, #128
+ 350 0018 5363     		str	r3, [r2, #52]
+ 155:../Sources/utils/ir.c **** 
+ 156:../Sources/utils/ir.c ****   //for (pause=0; pause<100; pause++); // Forbidden Delay in an ISR - remove this line !!!
+ 157:../Sources/utils/ir.c **** 
+ 158:../Sources/utils/ir.c ****   // _todo ML#8.03 implement the ISR as follows:
+ 159:../Sources/utils/ir.c ****   // determine if it is a pulse or a pause (check GPIO-Pin)
+ 160:../Sources/utils/ir.c ****   // calculate the pulse or pause time
+ 161:../Sources/utils/ir.c ****   // call irProcessReceiveStateMachine(pulse, pause); if it was a pause
+ 162:../Sources/utils/ir.c **** 
+ 163:../Sources/utils/ir.c ****   uint16_t value = FTM0_C5V;
+ 351              		.loc 1 163 0
+ 352 001a 164B     		ldr	r3, .L29+4
+ 353 001c 9B6B     		ldr	r3, [r3, #56]
+ 354 001e FB80     		strh	r3, [r7, #6]	@ movhi
+ 164:../Sources/utils/ir.c ****   if (GPIOD_PDIR & (1<<5)) {        // Pin is High now => rising edge => pulse: --___--
+ 355              		.loc 1 164 0
+ 356 0020 154B     		ldr	r3, .L29+8
+ 357 0022 1B69     		ldr	r3, [r3, #16]
+ 358 0024 03F02003 		and	r3, r3, #32
+ 359 0028 002B     		cmp	r3, #0
+ 360 002a 07D0     		beq	.L27
+ 165:../Sources/utils/ir.c ****     pulse = value - oldTicks;       // calc pule time
+ 361              		.loc 1 165 0
+ 362 002c 134B     		ldr	r3, .L29+12
+ 363 002e 1B88     		ldrh	r3, [r3]
+ 364 0030 FA88     		ldrh	r2, [r7, #6]	@ movhi
+ 365 0032 D31A     		subs	r3, r2, r3
+ 366 0034 9AB2     		uxth	r2, r3
+ 367 0036 124B     		ldr	r3, .L29+16
+ 368 0038 1A80     		strh	r2, [r3]	@ movhi
+ 369 003a 0EE0     		b	.L28
+ 370              	.L27:
+ 166:../Sources/utils/ir.c ****   }
+ 167:../Sources/utils/ir.c ****   else {                            // Pin is Low now => falling edge => pause: __---__
+ 168:../Sources/utils/ir.c ****     pause = value - oldTicks;       // calc pause time
+ 371              		.loc 1 168 0
+ 372 003c 0F4B     		ldr	r3, .L29+12
+ 373 003e 1B88     		ldrh	r3, [r3]
+ 374 0040 FA88     		ldrh	r2, [r7, #6]	@ movhi
+ 375 0042 D31A     		subs	r3, r2, r3
+ 376 0044 9AB2     		uxth	r2, r3
+ 377 0046 0F4B     		ldr	r3, .L29+20
+ 378 0048 1A80     		strh	r2, [r3]	@ movhi
+ 169:../Sources/utils/ir.c ****     irProcessReceiveStateMachine(pulse, pause);
+ 379              		.loc 1 169 0
+ 380 004a 0D4B     		ldr	r3, .L29+16
+ 381 004c 1A88     		ldrh	r2, [r3]
+ 382 004e 0D4B     		ldr	r3, .L29+20
+ 383 0050 1B88     		ldrh	r3, [r3]
+ 384 0052 1946     		mov	r1, r3
+ 385 0054 1046     		mov	r0, r2
+ 386 0056 FFF7FEFF 		bl	irProcessReceiveStateMachine
+ 387              	.L28:
+ 170:../Sources/utils/ir.c ****   }
+ 171:../Sources/utils/ir.c ****   oldTicks = value;                 // store timestamp of last event
+ 388              		.loc 1 171 0
+ 389 005a 084A     		ldr	r2, .L29+12
+ 390 005c FB88     		ldrh	r3, [r7, #6]	@ movhi
+ 391 005e 1380     		strh	r3, [r2]	@ movhi
+ 172:../Sources/utils/ir.c **** 
+ 173:../Sources/utils/ir.c ****   OnExitInfraredISR();              // switch off led for debug purposes
+ 392              		.loc 1 173 0
+ 393 0060 034B     		ldr	r3, .L29
+ 394 0062 4FF48072 		mov	r2, #256
+ 395 0066 5A60     		str	r2, [r3, #4]
+ 174:../Sources/utils/ir.c **** }
+ 396              		.loc 1 174 0
+ 397 0068 00BF     		nop
+ 398 006a 0837     		adds	r7, r7, #8
+ 399              		.cfi_def_cfa_offset 8
+ 400 006c BD46     		mov	sp, r7
+ 401              		.cfi_def_cfa_register 13
+ 402              		@ sp needed
+ 403 006e 80BD     		pop	{r7, pc}
+ 404              	.L30:
+ 405              		.align	2
+ 406              	.L29:
+ 407 0070 80F00F40 		.word	1074786432
+ 408 0074 00800340 		.word	1073971200
+ 409 0078 C0F00F40 		.word	1074786496
+ 410 007c 00000000 		.word	oldTicks.6744
+ 411 0080 00000000 		.word	pulse.6745
+ 412 0084 00000000 		.word	pause.6746
+ 413              		.cfi_endproc
+ 414              	.LFE126:
+ 416              		.section	.text.irGetKey,"ax",%progbits
+ 417              		.align	1
+ 418              		.global	irGetKey
+ 419              		.syntax unified
+ 420              		.thumb
+ 421              		.thumb_func
+ 422              		.fpu fpv4-sp-d16
+ 424              	irGetKey:
+ 425              	.LFB127:
+ 175:../Sources/utils/ir.c **** 
+ 176:../Sources/utils/ir.c **** 
+ 177:../Sources/utils/ir.c **** /**
+ 178:../Sources/utils/ir.c ****  * Returns a key or 0 if no key was pressed.
+ 179:../Sources/utils/ir.c ****  */
+ 180:../Sources/utils/ir.c **** uint8_t irGetKey(void)
+ 181:../Sources/utils/ir.c **** {
+ 426              		.loc 1 181 0
+ 427              		.cfi_startproc
+ 428              		@ args = 0, pretend = 0, frame = 8
+ 429              		@ frame_needed = 1, uses_anonymous_args = 0
+ 430              		@ link register save eliminated.
+ 431 0000 80B4     		push	{r7}
+ 432              		.cfi_def_cfa_offset 4
+ 433              		.cfi_offset 7, -4
+ 434 0002 83B0     		sub	sp, sp, #12
+ 435              		.cfi_def_cfa_offset 16
+ 436 0004 00AF     		add	r7, sp, #0
+ 437              		.cfi_def_cfa_register 7
+ 182:../Sources/utils/ir.c ****   volatile uint16_t adr; // not used
+ 183:../Sources/utils/ir.c ****   uint8_t cmd = 0;
+ 438              		.loc 1 183 0
+ 439 0006 0023     		movs	r3, #0
+ 440 0008 FB71     		strb	r3, [r7, #7]
+ 184:../Sources/utils/ir.c **** 
+ 185:../Sources/utils/ir.c ****   if (rxState == rxReceived)
+ 441              		.loc 1 185 0
+ 442 000a 7C4B     		ldr	r3, .L54
+ 443 000c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 444 000e 022B     		cmp	r3, #2
+ 445 0010 40F0ED80 		bne	.L32
+ 186:../Sources/utils/ir.c ****   {
+ 187:../Sources/utils/ir.c ****     adr = rxCommand.cmd.adr;
+ 446              		.loc 1 187 0
+ 447 0014 7A4B     		ldr	r3, .L54+4
+ 448 0016 1B88     		ldrh	r3, [r3]
+ 449 0018 BB80     		strh	r3, [r7, #4]	@ movhi
+ 188:../Sources/utils/ir.c ****     switch (rxCommand.cmd.cmd)
+ 450              		.loc 1 188 0
+ 451 001a 794B     		ldr	r3, .L54+4
+ 452 001c 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 453 001e 073B     		subs	r3, r3, #7
+ 454 0020 532B     		cmp	r3, #83
+ 455 0022 00F2DE80 		bhi	.L33
+ 456 0026 01A2     		adr	r2, .L35
+ 457 0028 52F823F0 		ldr	pc, [r2, r3, lsl #2]
+ 458              		.p2align 2
+ 459              	.L35:
+ 460 002c A1010000 		.word	.L34+1
+ 461 0030 D1010000 		.word	.L36+1
+ 462 0034 AD010000 		.word	.L37+1
+ 463 0038 E3010000 		.word	.L33+1
+ 464 003c E3010000 		.word	.L33+1
+ 465 0040 E3010000 		.word	.L33+1
+ 466 0044 BF010000 		.word	.L38+1
+ 467 0048 E3010000 		.word	.L33+1
+ 468 004c E3010000 		.word	.L33+1
+ 469 0050 E3010000 		.word	.L33+1
+ 470 0054 E3010000 		.word	.L33+1
+ 471 0058 E3010000 		.word	.L33+1
+ 472 005c E3010000 		.word	.L33+1
+ 473 0060 E3010000 		.word	.L33+1
+ 474 0064 A7010000 		.word	.L39+1
+ 475 0068 B3010000 		.word	.L40+1
+ 476 006c E3010000 		.word	.L33+1
+ 477 0070 C5010000 		.word	.L41+1
+ 478 0074 B9010000 		.word	.L42+1
+ 479 0078 E3010000 		.word	.L33+1
+ 480 007c E3010000 		.word	.L33+1
+ 481 0080 DD010000 		.word	.L43+1
+ 482 0084 E3010000 		.word	.L33+1
+ 483 0088 E3010000 		.word	.L33+1
+ 484 008c E3010000 		.word	.L33+1
+ 485 0090 E3010000 		.word	.L33+1
+ 486 0094 E3010000 		.word	.L33+1
+ 487 0098 E3010000 		.word	.L33+1
+ 488 009c E3010000 		.word	.L33+1
+ 489 00a0 E3010000 		.word	.L33+1
+ 490 00a4 E3010000 		.word	.L33+1
+ 491 00a8 E3010000 		.word	.L33+1
+ 492 00ac E3010000 		.word	.L33+1
+ 493 00b0 E3010000 		.word	.L33+1
+ 494 00b4 E3010000 		.word	.L33+1
+ 495 00b8 E3010000 		.word	.L33+1
+ 496 00bc E3010000 		.word	.L33+1
+ 497 00c0 E3010000 		.word	.L33+1
+ 498 00c4 E3010000 		.word	.L33+1
+ 499 00c8 E3010000 		.word	.L33+1
+ 500 00cc E3010000 		.word	.L33+1
+ 501 00d0 E3010000 		.word	.L33+1
+ 502 00d4 E3010000 		.word	.L33+1
+ 503 00d8 E3010000 		.word	.L33+1
+ 504 00dc E3010000 		.word	.L33+1
+ 505 00e0 E3010000 		.word	.L33+1
+ 506 00e4 E3010000 		.word	.L33+1
+ 507 00e8 E3010000 		.word	.L33+1
+ 508 00ec E3010000 		.word	.L33+1
+ 509 00f0 E3010000 		.word	.L33+1
+ 510 00f4 E3010000 		.word	.L33+1
+ 511 00f8 E3010000 		.word	.L33+1
+ 512 00fc E3010000 		.word	.L33+1
+ 513 0100 E3010000 		.word	.L33+1
+ 514 0104 E3010000 		.word	.L33+1
+ 515 0108 E3010000 		.word	.L33+1
+ 516 010c E3010000 		.word	.L33+1
+ 517 0110 95010000 		.word	.L44+1
+ 518 0114 E3010000 		.word	.L33+1
+ 519 0118 E3010000 		.word	.L33+1
+ 520 011c 9B010000 		.word	.L45+1
+ 521 0120 8F010000 		.word	.L46+1
+ 522 0124 7D010000 		.word	.L47+1
+ 523 0128 83010000 		.word	.L48+1
+ 524 012c 89010000 		.word	.L49+1
+ 525 0130 E3010000 		.word	.L33+1
+ 526 0134 E3010000 		.word	.L33+1
+ 527 0138 E3010000 		.word	.L33+1
+ 528 013c E3010000 		.word	.L33+1
+ 529 0140 E3010000 		.word	.L33+1
+ 530 0144 E3010000 		.word	.L33+1
+ 531 0148 E3010000 		.word	.L33+1
+ 532 014c E3010000 		.word	.L33+1
+ 533 0150 E3010000 		.word	.L33+1
+ 534 0154 E3010000 		.word	.L33+1
+ 535 0158 CB010000 		.word	.L50+1
+ 536 015c E3010000 		.word	.L33+1
+ 537 0160 E3010000 		.word	.L33+1
+ 538 0164 E3010000 		.word	.L33+1
+ 539 0168 E3010000 		.word	.L33+1
+ 540 016c E3010000 		.word	.L33+1
+ 541 0170 E3010000 		.word	.L33+1
+ 542 0174 E3010000 		.word	.L33+1
+ 543 0178 D7010000 		.word	.L51+1
+ 544              		.p2align 1
+ 545              	.L47:
+ 189:../Sources/utils/ir.c ****     {
+ 190:../Sources/utils/ir.c ****     // _todo ML#8.04 complete the switch statement. See "ir.h" for Key-Codes
+ 191:../Sources/utils/ir.c ****       case 0x45 : cmd = Key1; break;
+ 546              		.loc 1 191 0
+ 547 017c 3123     		movs	r3, #49
+ 548 017e FB71     		strb	r3, [r7, #7]
+ 549 0180 32E0     		b	.L52
+ 550              	.L48:
+ 192:../Sources/utils/ir.c ****       case 0x46 : cmd = Key2; break;
+ 551              		.loc 1 192 0
+ 552 0182 3223     		movs	r3, #50
+ 553 0184 FB71     		strb	r3, [r7, #7]
+ 554 0186 2FE0     		b	.L52
+ 555              	.L49:
+ 193:../Sources/utils/ir.c ****       case 0x47 : cmd = Key3; break;
+ 556              		.loc 1 193 0
+ 557 0188 3323     		movs	r3, #51
+ 558 018a FB71     		strb	r3, [r7, #7]
+ 559 018c 2CE0     		b	.L52
+ 560              	.L46:
+ 194:../Sources/utils/ir.c ****       case 0x44 : cmd = Key4; break;
+ 561              		.loc 1 194 0
+ 562 018e 3423     		movs	r3, #52
+ 563 0190 FB71     		strb	r3, [r7, #7]
+ 564 0192 29E0     		b	.L52
+ 565              	.L44:
+ 195:../Sources/utils/ir.c ****       case 0x40 : cmd = Key5; break;
+ 566              		.loc 1 195 0
+ 567 0194 3523     		movs	r3, #53
+ 568 0196 FB71     		strb	r3, [r7, #7]
+ 569 0198 26E0     		b	.L52
+ 570              	.L45:
+ 196:../Sources/utils/ir.c ****       case 0x43 : cmd = Key6; break;
+ 571              		.loc 1 196 0
+ 572 019a 3623     		movs	r3, #54
+ 573 019c FB71     		strb	r3, [r7, #7]
+ 574 019e 23E0     		b	.L52
+ 575              	.L34:
+ 197:../Sources/utils/ir.c ****       case 0x07 : cmd = Key7; break;
+ 576              		.loc 1 197 0
+ 577 01a0 3723     		movs	r3, #55
+ 578 01a2 FB71     		strb	r3, [r7, #7]
+ 579 01a4 20E0     		b	.L52
+ 580              	.L39:
+ 198:../Sources/utils/ir.c ****       case 0x15 : cmd = Key8; break;
+ 581              		.loc 1 198 0
+ 582 01a6 3823     		movs	r3, #56
+ 583 01a8 FB71     		strb	r3, [r7, #7]
+ 584 01aa 1DE0     		b	.L52
+ 585              	.L37:
+ 199:../Sources/utils/ir.c ****       case 0x09 : cmd = Key9; break;
+ 586              		.loc 1 199 0
+ 587 01ac 3923     		movs	r3, #57
+ 588 01ae FB71     		strb	r3, [r7, #7]
+ 589 01b0 1AE0     		b	.L52
+ 590              	.L40:
+ 200:../Sources/utils/ir.c ****       case 0x16 : cmd = KeyStar; break;
+ 591              		.loc 1 200 0
+ 592 01b2 2A23     		movs	r3, #42
+ 593 01b4 FB71     		strb	r3, [r7, #7]
+ 594 01b6 17E0     		b	.L52
+ 595              	.L42:
+ 201:../Sources/utils/ir.c ****       case 0x19 : cmd = Key0; break;
+ 596              		.loc 1 201 0
+ 597 01b8 3023     		movs	r3, #48
+ 598 01ba FB71     		strb	r3, [r7, #7]
+ 599 01bc 14E0     		b	.L52
+ 600              	.L38:
+ 202:../Sources/utils/ir.c ****       case 0x0D : cmd = KeyHash; break;
+ 601              		.loc 1 202 0
+ 602 01be 2323     		movs	r3, #35
+ 603 01c0 FB71     		strb	r3, [r7, #7]
+ 604 01c2 11E0     		b	.L52
+ 605              	.L41:
+ 203:../Sources/utils/ir.c ****       case 0x18 : cmd = KeyUp; break;
+ 606              		.loc 1 203 0
+ 607 01c4 5523     		movs	r3, #85
+ 608 01c6 FB71     		strb	r3, [r7, #7]
+ 609 01c8 0EE0     		b	.L52
+ 610              	.L50:
+ 204:../Sources/utils/ir.c ****       case 0x52 : cmd = KeyDown; break;
+ 611              		.loc 1 204 0
+ 612 01ca 4423     		movs	r3, #68
+ 613 01cc FB71     		strb	r3, [r7, #7]
+ 614 01ce 0BE0     		b	.L52
+ 615              	.L36:
+ 205:../Sources/utils/ir.c ****       case 0x08 : cmd = KeyLeft; break;
+ 616              		.loc 1 205 0
+ 617 01d0 4C23     		movs	r3, #76
+ 618 01d2 FB71     		strb	r3, [r7, #7]
+ 619 01d4 08E0     		b	.L52
+ 620              	.L51:
+ 206:../Sources/utils/ir.c ****       case 0x5A : cmd = KeyRight; break;
+ 621              		.loc 1 206 0
+ 622 01d6 5223     		movs	r3, #82
+ 623 01d8 FB71     		strb	r3, [r7, #7]
+ 624 01da 05E0     		b	.L52
+ 625              	.L43:
+ 207:../Sources/utils/ir.c ****       case 0x1C : cmd = KeyOK; break;
+ 626              		.loc 1 207 0
+ 627 01dc 0D23     		movs	r3, #13
+ 628 01de FB71     		strb	r3, [r7, #7]
+ 629 01e0 02E0     		b	.L52
+ 630              	.L33:
+ 208:../Sources/utils/ir.c ****       default : cmd = KeyUnknown; break;
+ 631              		.loc 1 208 0
+ 632 01e2 0023     		movs	r3, #0
+ 633 01e4 FB71     		strb	r3, [r7, #7]
+ 634 01e6 00BF     		nop
+ 635              	.L52:
+ 209:../Sources/utils/ir.c ****     }
+ 210:../Sources/utils/ir.c ****     rxState = rxIdle;
+ 636              		.loc 1 210 0
+ 637 01e8 044B     		ldr	r3, .L54
+ 638 01ea 0022     		movs	r2, #0
+ 639 01ec 1A70     		strb	r2, [r3]
+ 640              	.L32:
+ 211:../Sources/utils/ir.c ****   }
+ 212:../Sources/utils/ir.c ****   return cmd;
+ 641              		.loc 1 212 0
+ 642 01ee FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 213:../Sources/utils/ir.c **** }
+ 643              		.loc 1 213 0
+ 644 01f0 1846     		mov	r0, r3
+ 645 01f2 0C37     		adds	r7, r7, #12
+ 646              		.cfi_def_cfa_offset 4
+ 647 01f4 BD46     		mov	sp, r7
+ 648              		.cfi_def_cfa_register 13
+ 649              		@ sp needed
+ 650 01f6 5DF8047B 		ldr	r7, [sp], #4
+ 651              		.cfi_restore 7
+ 652              		.cfi_def_cfa_offset 0
+ 653 01fa 7047     		bx	lr
+ 654              	.L55:
+ 655              		.align	2
+ 656              	.L54:
+ 657 01fc 00000000 		.word	rxState
+ 658 0200 00000000 		.word	rxCommand
+ 659              		.cfi_endproc
+ 660              	.LFE127:
+ 662              		.section	.text.irInit,"ax",%progbits
+ 663              		.align	1
+ 664              		.global	irInit
+ 665              		.syntax unified
+ 666              		.thumb
+ 667              		.thumb_func
+ 668              		.fpu fpv4-sp-d16
+ 670              	irInit:
+ 671              	.LFB128:
+ 214:../Sources/utils/ir.c **** 
+ 215:../Sources/utils/ir.c **** 
+ 216:../Sources/utils/ir.c **** /**
+ 217:../Sources/utils/ir.c ****  * Initalization of the Infrared driver.
+ 218:../Sources/utils/ir.c ****  *
+ 219:../Sources/utils/ir.c ****  * On PTD5 is the IR-receiver connected. This function configures this
+ 220:../Sources/utils/ir.c ****  * port pin as timer channel (FTM0, Channel 5) and initialize the timer
+ 221:../Sources/utils/ir.c ****  * to generate interrupts on every changing edge of the pin.
+ 222:../Sources/utils/ir.c ****  */
+ 223:../Sources/utils/ir.c **** void irInit(void)
+ 224:../Sources/utils/ir.c **** {
+ 672              		.loc 1 224 0
+ 673              		.cfi_startproc
+ 674              		@ args = 0, pretend = 0, frame = 0
+ 675              		@ frame_needed = 1, uses_anonymous_args = 0
+ 676              		@ link register save eliminated.
+ 677 0000 80B4     		push	{r7}
+ 678              		.cfi_def_cfa_offset 4
+ 679              		.cfi_offset 7, -4
+ 680 0002 00AF     		add	r7, sp, #0
+ 681              		.cfi_def_cfa_register 7
+ 225:../Sources/utils/ir.c ****   // _todo ML#8.01 configure the mux of PTD5 as timer channel.
+ 226:../Sources/utils/ir.c ****   PORTD_PCR5 = PORT_PCR_MUX(4);
+ 682              		.loc 1 226 0
+ 683 0004 054B     		ldr	r3, .L57
+ 684 0006 4FF48062 		mov	r2, #1024
+ 685 000a 5A61     		str	r2, [r3, #20]
+ 227:../Sources/utils/ir.c **** 
+ 228:../Sources/utils/ir.c ****   // _todo ML#8.02 configure the timer channel as follows:
+ 229:../Sources/utils/ir.c ****   // Input Capture with enabled interrupt on every changing edge of the pin
+ 230:../Sources/utils/ir.c ****   FTM0_C5SC = FTM_CnSC_CHIE(1) | FTM_CnSC_ELSx(3) | FTM_CnSC_MSx(0);
+ 686              		.loc 1 230 0
+ 687 000c 044B     		ldr	r3, .L57+4
+ 688 000e 4C22     		movs	r2, #76
+ 689 0010 5A63     		str	r2, [r3, #52]
+ 231:../Sources/utils/ir.c **** }
+ 690              		.loc 1 231 0
+ 691 0012 00BF     		nop
+ 692 0014 BD46     		mov	sp, r7
+ 693              		.cfi_def_cfa_register 13
+ 694              		@ sp needed
+ 695 0016 5DF8047B 		ldr	r7, [sp], #4
+ 696              		.cfi_restore 7
+ 697              		.cfi_def_cfa_offset 0
+ 698 001a 7047     		bx	lr
+ 699              	.L58:
+ 700              		.align	2
+ 701              	.L57:
+ 702 001c 00C00440 		.word	1074053120
+ 703 0020 00800340 		.word	1073971200
+ 704              		.cfi_endproc
+ 705              	.LFE128:
+ 707              		.section	.bss.bytePos.6734,"aw",%nobits
+ 710              	bytePos.6734:
+ 711 0000 00       		.space	1
+ 712              		.section	.bss.bitPos.6733,"aw",%nobits
+ 715              	bitPos.6733:
+ 716 0000 00       		.space	1
+ 717              		.section	.bss.oldTicks.6744,"aw",%nobits
+ 718              		.align	1
+ 721              	oldTicks.6744:
+ 722 0000 0000     		.space	2
+ 723              		.section	.bss.pulse.6745,"aw",%nobits
+ 724              		.align	1
+ 727              	pulse.6745:
+ 728 0000 0000     		.space	2
+ 729              		.section	.bss.pause.6746,"aw",%nobits
+ 730              		.align	1
+ 733              	pause.6746:
+ 734 0000 0000     		.space	2
+ 735              		.text
+ 736              	.Letext0:
+ 737              		.file 2 "c:\\program files (x86)\\gnu tools arm embedded\\6 2017-q2-update\\arm-none-eabi\\include
+ 738              		.file 3 "c:\\program files (x86)\\gnu tools arm embedded\\6 2017-q2-update\\arm-none-eabi\\include
+ 739              		.file 4 "../Includes/core_cm4.h"
+ 740              		.file 5 "../Includes/system_MK22F51212.h"
+ 741              		.file 6 "../Includes/MK22F51212.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 ir.c
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:18     .bss.rxCommand:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:21     .bss.rxCommand:00000000 rxCommand
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:26     .bss.rxState:00000000 rxState
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:27     .bss.rxState:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:29     .text.irProcessReceiveStateMachine:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:36     .text.irProcessReceiveStateMachine:00000000 irProcessReceiveStateMachine
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:312    .text.irProcessReceiveStateMachine:0000019c $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:710    .bss.bytePos.6734:00000000 bytePos.6734
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:715    .bss.bitPos.6733:00000000 bitPos.6733
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:320    .text.FTM0CH5_IRQHandler:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:327    .text.FTM0CH5_IRQHandler:00000000 FTM0CH5_IRQHandler
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:407    .text.FTM0CH5_IRQHandler:00000070 $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:721    .bss.oldTicks.6744:00000000 oldTicks.6744
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:727    .bss.pulse.6745:00000000 pulse.6745
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:733    .bss.pause.6746:00000000 pause.6746
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:417    .text.irGetKey:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:424    .text.irGetKey:00000000 irGetKey
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:460    .text.irGetKey:0000002c $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:544    .text.irGetKey:0000017c $t
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:657    .text.irGetKey:000001fc $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:663    .text.irInit:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:670    .text.irInit:00000000 irInit
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:702    .text.irInit:0000001c $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:711    .bss.bytePos.6734:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:716    .bss.bitPos.6733:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:718    .bss.oldTicks.6744:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:724    .bss.pulse.6745:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccmF2pcM.s:730    .bss.pause.6746:00000000 $d
+                     .debug_frame:00000010 $d
+                           .group:00000000 wm4.0.a6d4f739a788c67292a3ea0a48d10bd5
+                           .group:00000000 wm4.MK22F51212.h.96.792c303daa596f91c029224edd7c60aa
+                           .group:00000000 wm4._newlib_version.h.4.3572908597b70d672d181fc7fc501c19
+                           .group:00000000 wm4.features.h.33.cf97d4c9a045ebab6d282f6356e11363
+                           .group:00000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:00000000 wm4._intsup.h.10.cce27fed8484c08a33f522034c30d2b5
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.MK22F51212.h.109.eeee73bf5f54e3f06177795004b95e22
+                           .group:00000000 wm4.core_cm4.h.43.f75e2f71b2e33f7a3db429cd8b0cae9e
+                           .group:00000000 wm4.core_cmInstr.h.39.addda81f1f3453ba31dd54fc5b6fcee8
+                           .group:00000000 wm4.core_cmSimd.h.43.c355993beb49ccd10586af5b1cfe5aee
+                           .group:00000000 wm4.core_cm4.h.201.a59e218d30e39d114c8962bbad645c74
+                           .group:00000000 wm4.system_MK22F51212.h.94.09b5fd63c227fb82ca8c370fba9e2334
+                           .group:00000000 wm4.MK22F51212.h.369.5a9c5aa32d240e03ff494f1c769cfadf
+                           .group:00000000 wm4.platform.h.20.28ca110c32480cfc497168a1f0df404d
+                           .group:00000000 wm4.ftm0.h.17.5248340b1e8cb6055bff9d02a5cbc56f
+                           .group:00000000 wm4.ir.h.17.a83bba368258f17df484fee368830fc4
+
+NO UNDEFINED SYMBOLS
