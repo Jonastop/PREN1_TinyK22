@@ -1,0 +1,297 @@
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"main.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.EnableDebugLeds,"ax",%progbits
+  18              		.align	1
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	EnableDebugLeds:
+  25              	.LFB124:
+  26              		.file 1 "../Includes/platform.h"
+   1:../Includes/platform.h **** /**
+   2:../Includes/platform.h ****  *--------------------------------------------------------------------\n
+   3:../Includes/platform.h ****  *          HSLU T&A Hochschule Luzern Technik+Architektur            \n
+   4:../Includes/platform.h ****  *--------------------------------------------------------------------\n
+   5:../Includes/platform.h ****  *
+   6:../Includes/platform.h ****  * \brief         Global definitions for the whole project.
+   7:../Includes/platform.h ****  * \file
+   8:../Includes/platform.h ****  * \author        Christian Jost, christian.jost@hslu.ch
+   9:../Includes/platform.h ****  * \date          12.03.20018
+  10:../Includes/platform.h ****  *
+  11:../Includes/platform.h ****  * $Id: platform.h 104 2018-05-01 14:07:11Z zajost $
+  12:../Includes/platform.h ****  *
+  13:../Includes/platform.h ****  *--------------------------------------------------------------------
+  14:../Includes/platform.h ****  */
+  15:../Includes/platform.h **** #ifndef INCLUDES_PLATFORM_H_
+  16:../Includes/platform.h **** #define INCLUDES_PLATFORM_H_
+  17:../Includes/platform.h **** 
+  18:../Includes/platform.h **** #include "MK22F51212.h"
+  19:../Includes/platform.h **** 
+  20:../Includes/platform.h **** #define MC_CAR                            1
+  21:../Includes/platform.h **** #define TINYK22                           2
+  22:../Includes/platform.h **** #define AUTO                              (MC_CAR | TINYK22)
+  23:../Includes/platform.h **** #define SOLUTION                          0
+  24:../Includes/platform.h **** 
+  25:../Includes/platform.h **** // ================================================================================================
+  26:../Includes/platform.h **** // Configuration
+  27:../Includes/platform.h **** // ================================================================================================
+  28:../Includes/platform.h **** #define PLATFORM                           TINYK22   // [TINYK22|MC_CAR|AUTO] select target platfor
+  29:../Includes/platform.h **** #define DEBUG_LED                          1   // [1|0] enable/disable green debug led of the MC-CA
+  30:../Includes/platform.h **** 
+  31:../Includes/platform.h **** #define TERMINAL_BAUDRATE              57600
+  32:../Includes/platform.h **** 
+  33:../Includes/platform.h **** #define PRIO_UART0                         5  // [0..15] set interrupt priority: 0=max Prio
+  34:../Includes/platform.h **** #define PRIO_UART1                         5  // [0..15] set interrupt priority: 0=max Prio
+  35:../Includes/platform.h **** #define PRIO_LPUART0                       5  // [0..15] set interrupt priority: 0=max Prio
+  36:../Includes/platform.h **** #define PRIO_FTM0                          8  // [0..15] IR
+  37:../Includes/platform.h **** #define PRIO_FTM1                          4  // [0..15] Quad decoder
+  38:../Includes/platform.h **** #define PRIO_FTM2                          4  // [0..15] Quad decoder
+  39:../Includes/platform.h **** #define PRIO_FTM3                         12  // [0..15] Motor-PWM, RGB-Led's
+  40:../Includes/platform.h **** 
+  41:../Includes/platform.h **** 
+  42:../Includes/platform.h **** 
+  43:../Includes/platform.h **** // ================================================================================================
+  44:../Includes/platform.h **** #define CORECLOCK                  120000000  // 120 MHZ (CPU, UART0, UART1)
+  45:../Includes/platform.h **** #define BUSCLOCK                    60000000  // 60 MHz
+  46:../Includes/platform.h **** #define FIXED_SYSTEM_CLOCK            250000  // 250 kHz
+  47:../Includes/platform.h **** 
+  48:../Includes/platform.h **** 
+  49:../Includes/platform.h **** #define TGT_IS_MCCAR                        ((SIM_SDID & SIM_SDID_PINID_MASK) == 0x08) // 100-pin
+  50:../Includes/platform.h **** #define TGT_IS_TINYK22                      ((SIM_SDID & SIM_SDID_PINID_MASK) == 0x05) // 64-pin
+  51:../Includes/platform.h **** 
+  52:../Includes/platform.h **** #define NULL                     ((void *)0)
+  53:../Includes/platform.h **** #define TRUE                               1
+  54:../Includes/platform.h **** #define FALSE                              0
+  55:../Includes/platform.h **** 
+  56:../Includes/platform.h **** typedef char bool;
+  57:../Includes/platform.h **** 
+  58:../Includes/platform.h **** /**
+  59:../Includes/platform.h ****  * @brief Disable External Interrupt
+  60:../Includes/platform.h ****  *
+  61:../Includes/platform.h ****  * The function disables a device-specific interrupt in the NVIC interrupt controller
+  62:../Includes/platform.h ****  * and executes a DSB and ISB instruction.
+  63:../Includes/platform.h ****  *
+  64:../Includes/platform.h ****  * @see
+  65:../Includes/platform.h ****  *   4.6. Disabling Interrupts using NVIC
+  66:../Includes/platform.h ****  *   \n
+  67:../Includes/platform.h ****  *   http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHHFHJD.html
+  68:../Includes/platform.h ****  *   \n
+  69:../Includes/platform.h ****  *   if it is necessary to ensure an interrupt will not be triggered after disabling it in the NVIC
+  70:../Includes/platform.h ****  *   add a DSB instruction and then an ISB instruction.
+  71:../Includes/platform.h ****  */
+  72:../Includes/platform.h **** __STATIC_INLINE void NVIC_DisableIRQEx(IRQn_Type IRQn)
+  73:../Includes/platform.h **** {
+  74:../Includes/platform.h ****   NVIC_DisableIRQ(IRQn);
+  75:../Includes/platform.h ****   __asm volatile("dsb");   // data synchronization barrier
+  76:../Includes/platform.h ****   __asm volatile("isb");   // instruction synchronization barrier
+  77:../Includes/platform.h **** }
+  78:../Includes/platform.h **** 
+  79:../Includes/platform.h **** 
+  80:../Includes/platform.h **** typedef enum
+  81:../Includes/platform.h **** {
+  82:../Includes/platform.h ****   EC_SUCCESS = 0,           // no error
+  83:../Includes/platform.h **** 
+  84:../Includes/platform.h ****   EC_INVALID_CMD,           // invalid or unknown command
+  85:../Includes/platform.h ****   EC_INVALID_ARG,           // invalid or unknown argument(s)
+  86:../Includes/platform.h ****   EC_OVERFLOW,              // overflow
+  87:../Includes/platform.h **** 
+  88:../Includes/platform.h **** } tError;
+  89:../Includes/platform.h **** 
+  90:../Includes/platform.h **** 
+  91:../Includes/platform.h **** #if DEBUG_LED
+  92:../Includes/platform.h **** #define LED_Blue_ON()                           (GPIOC_PCOR = (1<<2))   // PTC8
+  93:../Includes/platform.h **** #define LED_Blue_OFF()                          (GPIOC_PSOR = (1<<2))
+  94:../Includes/platform.h **** #define LED_GREEN_FL_ON()                       (GPIOC_PCOR = (1<<8))   // PTC8
+  95:../Includes/platform.h **** #define LED_GREEN_FL_OFF()                      (GPIOC_PSOR = (1<<8))
+  96:../Includes/platform.h **** #define LED_GREEN_FR_ON()                       (GPIOC_PCOR = (1<<11))  // PTC11
+  97:../Includes/platform.h **** #define LED_GREEN_FR_OFF()                      (GPIOC_PSOR = (1<<11))
+  98:../Includes/platform.h **** 
+  99:../Includes/platform.h **** // switch on led for debug purposes
+ 100:../Includes/platform.h **** #define OnEnterQuadLeftISR()                    LED_GREEN_FR_ON()
+ 101:../Includes/platform.h **** #define OnEnterQuadRightISR()                   LED_GREEN_FR_ON()
+ 102:../Includes/platform.h **** #define OnEnterInfraredISR()                    LED_GREEN_FL_ON()
+ 103:../Includes/platform.h **** #define OnEnterSoundISR()                       LED_GREEN_FL_ON()
+ 104:../Includes/platform.h **** #define OnEnterUart0RxTxISR()                   LED_GREEN_FL_ON()
+ 105:../Includes/platform.h **** #define OnEnterUart1RxTxISR()                   LED_GREEN_FL_ON()
+ 106:../Includes/platform.h **** #define OnEnterLpUart0ISR()                     LED_GREEN_FL_ON()
+ 107:../Includes/platform.h **** 
+ 108:../Includes/platform.h **** // switch off led for debug purposes
+ 109:../Includes/platform.h **** #define OnExitQuadLeftISR()                     LED_GREEN_FR_OFF()
+ 110:../Includes/platform.h **** #define OnExitQuadRightISR()                    LED_GREEN_FR_OFF()
+ 111:../Includes/platform.h **** #define OnExitInfraredISR()                     LED_GREEN_FL_OFF()
+ 112:../Includes/platform.h **** #define OnExitSoundISR()                        LED_GREEN_FL_OFF()
+ 113:../Includes/platform.h **** #define OnExitUart0RxTxISR()                    LED_GREEN_FL_OFF()
+ 114:../Includes/platform.h **** #define OnExitUart1RxTxISR()                    LED_GREEN_FL_OFF()
+ 115:../Includes/platform.h **** #define OnExitLpUart0ISR()                      LED_GREEN_FL_OFF()
+ 116:../Includes/platform.h **** 
+ 117:../Includes/platform.h **** __STATIC_INLINE void EnableDebugLeds(void)
+ 118:../Includes/platform.h **** {
+  27              		.loc 1 118 0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 1, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 80B4     		push	{r7}
+  33              		.cfi_def_cfa_offset 4
+  34              		.cfi_offset 7, -4
+  35 0002 00AF     		add	r7, sp, #0
+  36              		.cfi_def_cfa_register 7
+ 119:../Includes/platform.h ****   PORTC_PCR8 = PORTC_PCR11 = PORTC_PCR2 = PORT_PCR_MUX(1);
+  37              		.loc 1 119 0
+  38 0004 0A4A     		ldr	r2, .L2
+  39 0006 0A49     		ldr	r1, .L2
+  40 0008 0948     		ldr	r0, .L2
+  41 000a 4FF48073 		mov	r3, #256
+  42 000e 8360     		str	r3, [r0, #8]
+  43 0010 CB62     		str	r3, [r1, #44]
+  44 0012 1362     		str	r3, [r2, #32]
+ 120:../Includes/platform.h ****   GPIOC_PDDR |= ((1<<8) | (1<<11) | (1<<2));
+  45              		.loc 1 120 0
+  46 0014 074A     		ldr	r2, .L2+4
+  47 0016 074B     		ldr	r3, .L2+4
+  48 0018 5B69     		ldr	r3, [r3, #20]
+  49 001a 43F41063 		orr	r3, r3, #2304
+  50 001e 43F00403 		orr	r3, r3, #4
+  51 0022 5361     		str	r3, [r2, #20]
+ 121:../Includes/platform.h **** }
+  52              		.loc 1 121 0
+  53 0024 00BF     		nop
+  54 0026 BD46     		mov	sp, r7
+  55              		.cfi_def_cfa_register 13
+  56              		@ sp needed
+  57 0028 5DF8047B 		ldr	r7, [sp], #4
+  58              		.cfi_restore 7
+  59              		.cfi_def_cfa_offset 0
+  60 002c 7047     		bx	lr
+  61              	.L3:
+  62 002e 00BF     		.align	2
+  63              	.L2:
+  64 0030 00B00440 		.word	1074049024
+  65 0034 80F00F40 		.word	1074786432
+  66              		.cfi_endproc
+  67              	.LFE124:
+  69              		.section	.text.main,"ax",%progbits
+  70              		.align	1
+  71              		.global	main
+  72              		.syntax unified
+  73              		.thumb
+  74              		.thumb_func
+  75              		.fpu fpv4-sp-d16
+  77              	main:
+  78              	.LFB125:
+  79              		.file 2 "../Sources/main.c"
+   1:../Sources/main.c **** /*
+   2:../Sources/main.c ****  ============================================================================
+   3:../Sources/main.c ****  Name        : PREN_Team31_TinyK22_v1
+   4:../Sources/main.c ****  File        : main.c
+   5:../Sources/main.c ****  Author      : PREN Team31
+   6:../Sources/main.c ****  Version     : V1
+   7:../Sources/main.c ****  Date        : 08.11.2019
+   8:../Sources/main.c ****  Description : Source for TinyK22
+   9:../Sources/main.c ****  ============================================================================
+  10:../Sources/main.c ****  */
+  11:../Sources/main.c **** 
+  12:../Sources/main.c **** #include "platform.h"
+  13:../Sources/main.c **** #include "ftm0.h"
+  14:../Sources/main.c **** #include "ftm3.h"
+  15:../Sources/main.c **** #include "motor.h"
+  16:../Sources/main.c **** #include "quad.h"
+  17:../Sources/main.c **** #include "drive.h"
+  18:../Sources/main.c **** #include "pwrSwitch.h"
+  19:../Sources/main.c **** #include "led.h"
+  20:../Sources/main.c **** 
+  21:../Sources/main.c **** 
+  22:../Sources/main.c **** 
+  23:../Sources/main.c **** 
+  24:../Sources/main.c **** 
+  25:../Sources/main.c **** 
+  26:../Sources/main.c **** 
+  27:../Sources/main.c **** /**
+  28:../Sources/main.c ****  * Main function of the TinyK22 micro controller.
+  29:../Sources/main.c ****  */
+  30:../Sources/main.c **** 
+  31:../Sources/main.c **** void main(void)
+  32:../Sources/main.c **** {
+  80              		.loc 2 32 0
+  81              		.cfi_startproc
+  82              		@ args = 0, pretend = 0, frame = 0
+  83              		@ frame_needed = 1, uses_anonymous_args = 0
+  84 0000 80B5     		push	{r7, lr}
+  85              		.cfi_def_cfa_offset 8
+  86              		.cfi_offset 7, -8
+  87              		.cfi_offset 14, -4
+  88 0002 00AF     		add	r7, sp, #0
+  89              		.cfi_def_cfa_register 7
+  33:../Sources/main.c **** EnableDebugLeds();
+  90              		.loc 2 33 0
+  91 0004 FFF7FEFF 		bl	EnableDebugLeds
+  34:../Sources/main.c ****   LED_Blue_ON();
+  92              		.loc 2 34 0
+  93 0008 014B     		ldr	r3, .L6
+  94 000a 0422     		movs	r2, #4
+  95 000c 9A60     		str	r2, [r3, #8]
+  96              	.L5:
+  35:../Sources/main.c ****   // Never leave main
+  36:../Sources/main.c ****   for (;;){ }
+  97              		.loc 2 36 0 discriminator 1
+  98 000e FEE7     		b	.L5
+  99              	.L7:
+ 100              		.align	2
+ 101              	.L6:
+ 102 0010 80F00F40 		.word	1074786432
+ 103              		.cfi_endproc
+ 104              	.LFE125:
+ 106              		.text
+ 107              	.Letext0:
+ 108              		.file 3 "c:\\program files (x86)\\gnu tools arm embedded\\6 2017-q2-update\\arm-none-eabi\\include
+ 109              		.file 4 "c:\\program files (x86)\\gnu tools arm embedded\\6 2017-q2-update\\arm-none-eabi\\include
+ 110              		.file 5 "../Includes/core_cm4.h"
+ 111              		.file 6 "../Includes/system_MK22F51212.h"
+ 112              		.file 7 "../Includes/MK22F51212.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:18     .text.EnableDebugLeds:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:24     .text.EnableDebugLeds:00000000 EnableDebugLeds
+C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:64     .text.EnableDebugLeds:00000030 $d
+C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:70     .text.main:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:77     .text.main:00000000 main
+C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:102    .text.main:00000010 $d
+                     .debug_frame:00000010 $d
+                           .group:00000000 wm4.0.a6d4f739a788c67292a3ea0a48d10bd5
+                           .group:00000000 wm4.MK22F51212.h.96.792c303daa596f91c029224edd7c60aa
+                           .group:00000000 wm4._newlib_version.h.4.3572908597b70d672d181fc7fc501c19
+                           .group:00000000 wm4.features.h.33.cf97d4c9a045ebab6d282f6356e11363
+                           .group:00000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:00000000 wm4._intsup.h.10.cce27fed8484c08a33f522034c30d2b5
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.MK22F51212.h.109.eeee73bf5f54e3f06177795004b95e22
+                           .group:00000000 wm4.core_cm4.h.43.f75e2f71b2e33f7a3db429cd8b0cae9e
+                           .group:00000000 wm4.core_cmInstr.h.39.addda81f1f3453ba31dd54fc5b6fcee8
+                           .group:00000000 wm4.core_cmSimd.h.43.c355993beb49ccd10586af5b1cfe5aee
+                           .group:00000000 wm4.core_cm4.h.201.a59e218d30e39d114c8962bbad645c74
+                           .group:00000000 wm4.system_MK22F51212.h.94.09b5fd63c227fb82ca8c370fba9e2334
+                           .group:00000000 wm4.MK22F51212.h.369.5a9c5aa32d240e03ff494f1c769cfadf
+                           .group:00000000 wm4.platform.h.20.5dba9aa78ee93a87b4214fc940da3bb4
+                           .group:00000000 wm4.ftm0.h.17.5248340b1e8cb6055bff9d02a5cbc56f
+                           .group:00000000 wm4.ftm3.h.17.18543e90097720d6aa4aa53f58670c33
+                           .group:00000000 wm4.motor.h.17.cf02e8017a4c3f5c3495abf75603565e
+                           .group:00000000 wm4.drive.h.17.103d27b5c8b69ef2b2867923fed3b65d
+                           .group:00000000 wm4.pwrSwitch.h.17.40ac4efe32b6496b1a07c42aeb57948b
+
+NO UNDEFINED SYMBOLS
