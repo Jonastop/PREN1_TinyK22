@@ -209,11 +209,11 @@
   12:../Sources/main.c **** #include "platform.h"
   13:../Sources/main.c **** #include "ftm0.h"
   14:../Sources/main.c **** #include "ftm3.h"
-  15:../Sources/main.c **** #include "motor.h"
-  16:../Sources/main.c **** #include "quad.h"
-  17:../Sources/main.c **** #include "drive.h"
-  18:../Sources/main.c **** #include "pwrSwitch.h"
-  19:../Sources/main.c **** #include "led.h"
+  15:../Sources/main.c **** #include "quad.h"
+  16:../Sources/main.c **** #include "drive.h"
+  17:../Sources/main.c **** #include "pwrSwitch.h"
+  18:../Sources/main.c **** #include "led.h"
+  19:../Sources/main.c **** #include <motor_h>
   20:../Sources/main.c **** 
   21:../Sources/main.c **** 
   22:../Sources/main.c **** 
@@ -246,9 +246,11 @@
   94 000a 0422     		movs	r2, #4
   95 000c 9A60     		str	r2, [r3, #8]
   96              	.L5:
-  35:../Sources/main.c ****   // Never leave main
-  36:../Sources/main.c ****   for (;;){ }
-  97              		.loc 2 36 0 discriminator 1
+  35:../Sources/main.c **** 
+  36:../Sources/main.c **** 
+  37:../Sources/main.c ****   // Never leave main
+  38:../Sources/main.c ****   for (;;){ }
+  97              		.loc 2 38 0 discriminator 1
   98 000e FEE7     		b	.L5
   99              	.L7:
  100              		.align	2
@@ -265,12 +267,12 @@
  112              		.file 7 "../Includes/MK22F51212.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 main.c
-C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:18     .text.EnableDebugLeds:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:24     .text.EnableDebugLeds:00000000 EnableDebugLeds
-C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:64     .text.EnableDebugLeds:00000030 $d
-C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:70     .text.main:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:77     .text.main:00000000 main
-C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:102    .text.main:00000010 $d
+C:\Users\jonas\AppData\Local\Temp\ccUmCojd.s:18     .text.EnableDebugLeds:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccUmCojd.s:24     .text.EnableDebugLeds:00000000 EnableDebugLeds
+C:\Users\jonas\AppData\Local\Temp\ccUmCojd.s:64     .text.EnableDebugLeds:00000030 $d
+C:\Users\jonas\AppData\Local\Temp\ccUmCojd.s:70     .text.main:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccUmCojd.s:77     .text.main:00000000 main
+C:\Users\jonas\AppData\Local\Temp\ccUmCojd.s:102    .text.main:00000010 $d
                      .debug_frame:00000010 $d
                            .group:00000000 wm4.0.a6d4f739a788c67292a3ea0a48d10bd5
                            .group:00000000 wm4.MK22F51212.h.96.792c303daa596f91c029224edd7c60aa
@@ -290,8 +292,8 @@ C:\Users\jonas\AppData\Local\Temp\ccDQy5CS.s:102    .text.main:00000010 $d
                            .group:00000000 wm4.platform.h.20.5dba9aa78ee93a87b4214fc940da3bb4
                            .group:00000000 wm4.ftm0.h.17.5248340b1e8cb6055bff9d02a5cbc56f
                            .group:00000000 wm4.ftm3.h.17.18543e90097720d6aa4aa53f58670c33
-                           .group:00000000 wm4.motor.h.17.cf02e8017a4c3f5c3495abf75603565e
                            .group:00000000 wm4.drive.h.17.103d27b5c8b69ef2b2867923fed3b65d
                            .group:00000000 wm4.pwrSwitch.h.17.40ac4efe32b6496b1a07c42aeb57948b
+                           .group:00000000 wm4.motor_h.17.cf02e8017a4c3f5c3495abf75603565e
 
 NO UNDEFINED SYMBOLS

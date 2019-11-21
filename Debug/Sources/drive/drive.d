@@ -3,7 +3,7 @@ Sources/drive/drive.o: ../Sources/drive/drive.c ../Includes/platform.h \
  ../Includes/core_cmInstr.h ../Includes/core_cmFunc.h \
  ../Includes/core_cmSimd.h ../Includes/system_MK22F51212.h \
  ../Sources/drive/drive.h ../Sources/drive/quad.h \
- ../Sources/drive/motor.h
+ ../Sources/drive/motor_h
 
 ../Includes/platform.h:
 
@@ -23,4 +23,4 @@ Sources/drive/drive.o: ../Sources/drive/drive.c ../Includes/platform.h \
 
 ../Sources/drive/quad.h:
 
-../Sources/drive/motor.h:
+../Sources/drive/motor_h:

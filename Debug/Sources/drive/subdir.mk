@@ -5,17 +5,14 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Sources/drive/drive.c \
-../Sources/drive/motor.c \
 ../Sources/drive/quad.c 
 
 OBJS += \
 ./Sources/drive/drive.o \
-./Sources/drive/motor.o \
 ./Sources/drive/quad.o 
 
 C_DEPS += \
 ./Sources/drive/drive.d \
-./Sources/drive/motor.d \
 ./Sources/drive/quad.d 
 
 

@@ -12,11 +12,11 @@
 #include "platform.h"
 #include "ftm0.h"
 #include "ftm3.h"
-#include "motor.h"
 #include "quad.h"
 #include "drive.h"
 #include "pwrSwitch.h"
 #include "led.h"
+#include <motor_h>
 
 
 

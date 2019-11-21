@@ -104,7 +104,7 @@
   16:../Sources/drive/drive.c **** #include "platform.h"
   17:../Sources/drive/drive.c **** #include "drive.h"
   18:../Sources/drive/drive.c **** #include "quad.h"
-  19:../Sources/drive/drive.c **** #include "motor.h"
+  19:../Sources/drive/drive.c **** #include <motor_h>
   20:../Sources/drive/drive.c **** 
   21:../Sources/drive/drive.c **** static int16_t setValueLeft;
   22:../Sources/drive/drive.c **** static int16_t setValueRight;
@@ -1125,64 +1125,64 @@
  975              		.file 5 "../Includes/system_MK22F51212.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 drive.c
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:18     .bss.setValueLeft:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:21     .bss.setValueLeft:00000000 setValueLeft
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:24     .bss.setValueRight:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:27     .bss.setValueRight:00000000 setValueRight
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:32     .bss.kpL:00000000 kpL
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:33     .bss.kpL:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:37     .bss.kiL:00000000 kiL
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:38     .bss.kiL:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:42     .bss.kdL:00000000 kdL
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:43     .bss.kdL:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:47     .bss.kpR:00000000 kpR
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:48     .bss.kpR:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:52     .bss.kiR:00000000 kiR
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:53     .bss.kiR:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:57     .bss.kdR:00000000 kdR
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:58     .bss.kdR:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:60     .bss.integL:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:63     .bss.integL:00000000 integL
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:66     .bss.devL:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:69     .bss.devL:00000000 devL
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:72     .bss.devOldL:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:75     .bss.devOldL:00000000 devOldL
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:78     .bss.integR:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:81     .bss.integR:00000000 integR
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:84     .bss.devR:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:87     .bss.devR:00000000 devR
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:90     .bss.devOldR:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:93     .bss.devOldR:00000000 devOldR
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:96     .bss.valL:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:99     .bss.valL:00000000 valL
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:102    .bss.valR:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:105    .bss.valR:00000000 valR
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:18     .bss.setValueLeft:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:21     .bss.setValueLeft:00000000 setValueLeft
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:24     .bss.setValueRight:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:27     .bss.setValueRight:00000000 setValueRight
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:32     .bss.kpL:00000000 kpL
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:33     .bss.kpL:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:37     .bss.kiL:00000000 kiL
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:38     .bss.kiL:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:42     .bss.kdL:00000000 kdL
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:43     .bss.kdL:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:47     .bss.kpR:00000000 kpR
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:48     .bss.kpR:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:52     .bss.kiR:00000000 kiR
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:53     .bss.kiR:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:57     .bss.kdR:00000000 kdR
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:58     .bss.kdR:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:60     .bss.integL:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:63     .bss.integL:00000000 integL
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:66     .bss.devL:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:69     .bss.devL:00000000 devL
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:72     .bss.devOldL:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:75     .bss.devOldL:00000000 devOldL
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:78     .bss.integR:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:81     .bss.integR:00000000 integR
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:84     .bss.devR:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:87     .bss.devR:00000000 devR
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:90     .bss.devOldR:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:93     .bss.devOldR:00000000 devOldR
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:96     .bss.valL:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:99     .bss.valL:00000000 valL
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:102    .bss.valR:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:105    .bss.valR:00000000 valR
                             *COM*:00000200 sl
                             *COM*:00000200 sr
                             *COM*:00000001 sli
                             *COM*:00000001 sri
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:112    .text.driveSetSpeed:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:119    .text.driveSetSpeed:00000000 driveSetSpeed
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:195    .text.driveSetSpeed:0000006c $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:201    .text.driveSetParameters:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:208    .text.driveSetParameters:00000000 driveSetParameters
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:266    .text.driveSetParameters:00000040 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:274    .text.driveToWork:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:281    .text.driveToWork:00000000 driveToWork
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:627    .text.driveToWork:000002a8 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:950    .bss.speedLeft.6763:00000000 speedLeft.6763
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:956    .bss.speedRight.6764:00000000 speedRight.6764
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:962    .bss.setValueR.6766:00000000 setValueR.6766
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:968    .bss.setValueL.6765:00000000 setValueL.6765
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:647    .text.driveToWork:000002f0 $t
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:855    .text.driveToWork:0000048c $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:872    .text.driveInit:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:879    .text.driveInit:00000000 driveInit
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:935    .text.driveInit:00000048 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:947    .bss.speedLeft.6763:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:953    .bss.speedRight.6764:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:959    .bss.setValueR.6766:00000000 $d
-C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:965    .bss.setValueL.6765:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:112    .text.driveSetSpeed:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:119    .text.driveSetSpeed:00000000 driveSetSpeed
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:195    .text.driveSetSpeed:0000006c $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:201    .text.driveSetParameters:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:208    .text.driveSetParameters:00000000 driveSetParameters
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:266    .text.driveSetParameters:00000040 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:274    .text.driveToWork:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:281    .text.driveToWork:00000000 driveToWork
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:627    .text.driveToWork:000002a8 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:950    .bss.speedLeft.6763:00000000 speedLeft.6763
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:956    .bss.speedRight.6764:00000000 speedRight.6764
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:962    .bss.setValueR.6766:00000000 setValueR.6766
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:968    .bss.setValueL.6765:00000000 setValueL.6765
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:647    .text.driveToWork:000002f0 $t
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:855    .text.driveToWork:0000048c $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:872    .text.driveInit:00000000 $t
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:879    .text.driveInit:00000000 driveInit
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:935    .text.driveInit:00000048 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:947    .bss.speedLeft.6763:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:953    .bss.speedRight.6764:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:959    .bss.setValueR.6766:00000000 $d
+C:\Users\jonas\AppData\Local\Temp\ccksMtQd.s:965    .bss.setValueL.6765:00000000 $d
                      .debug_frame:00000010 $d
                            .group:00000000 wm4.0.a6d4f739a788c67292a3ea0a48d10bd5
                            .group:00000000 wm4.MK22F51212.h.96.792c303daa596f91c029224edd7c60aa
@@ -1201,7 +1201,7 @@ C:\Users\jonas\AppData\Local\Temp\cc58KABG.s:965    .bss.setValueL.6765:00000000
                            .group:00000000 wm4.MK22F51212.h.369.5a9c5aa32d240e03ff494f1c769cfadf
                            .group:00000000 wm4.platform.h.20.5dba9aa78ee93a87b4214fc940da3bb4
                            .group:00000000 wm4.drive.h.17.103d27b5c8b69ef2b2867923fed3b65d
-                           .group:00000000 wm4.motor.h.17.cf02e8017a4c3f5c3495abf75603565e
+                           .group:00000000 wm4.motor_h.17.cf02e8017a4c3f5c3495abf75603565e
 
 UNDEFINED SYMBOLS
 quadGetSpeedLeft

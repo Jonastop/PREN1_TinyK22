@@ -27,6 +27,7 @@ CPP_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 Project_Settings/Startup_Code \
+Sources/PREN \
 Sources/com \
 Sources/drive \
 Sources \

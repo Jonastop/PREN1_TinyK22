@@ -89,14 +89,12 @@ void motorSetPwmRight(int8_t value)
   else if (value > 0)
   {
     // drive forward
-    // todo #9.08 complete the else-if statement
     MOTOR_RIGHT_B_GPIO();       // set motor right B as GPIO Pin (high-level)
     MOTOR_RIGHT_A_PWM();        // set motor right A as timer Pin (pwm signal)
   }
   else
   {
     // stop
-    // todo #9.09 complete the else statement
     value=0;
 
   }
@@ -114,7 +112,7 @@ void motorSetPwmRight(int8_t value)
  */
 void motorSetPwmLeft(int8_t value)
 {
-  // todo #9.10 complete the function as above
+
   if (value > MOTOR_MAX_VALUE) value = MOTOR_MAX_VALUE;
     if (value < -MOTOR_MAX_VALUE) value = -MOTOR_MAX_VALUE;
     valueLeft = value;

@@ -16,7 +16,7 @@
 #include "platform.h"
 #include "drive.h"
 #include "quad.h"
-#include "motor.h"
+#include <motor_h>
 
 static int16_t setValueLeft;
 static int16_t setValueRight;

@@ -6,6 +6,8 @@
  */
 
 #include "platform.h"
+#include "pwm-motor.h"
+#include "ftm3.h"
 
 // configuration from GPIO to FTM-Mode and vice versa
 #define MOTOR_RIGHT_PWM()           (PORTC_PCR8 = PORT_PCR_MUX(3))  // PTC8: FTM3_CH4
@@ -19,18 +21,76 @@ static int8_t valueLeft;
 
 
 void motorIncrementPwmRight(int8_t value){
-
+  int32_t v = valueRight + value;
+  if (v > MOTOR_MAX_VALUE) v = MOTOR_MAX_VALUE;
+  if (v < -MOTOR_MAX_VALUE) v = -MOTOR_MAX_VALUE;
+  motorSetPwmRight((int8_t)v);
 };
 
 void motorIncrementPwmLeft(int8_t value){
-
+  int32_t v = valueLeft + value;
+    if (v > MOTOR_MAX_VALUE) v = MOTOR_MAX_VALUE;
+    if (v < -MOTOR_MAX_VALUE) v = -MOTOR_MAX_VALUE;
+    motorSetPwmLeft((int8_t)v);
 };
 
 void motorSetPwmRight(int8_t value){
+  if (value > MOTOR_MAX_VALUE) value = MOTOR_MAX_VALUE;
+  if (value < -MOTOR_MAX_VALUE) value = -MOTOR_MAX_VALUE;
+  valueRight = value;
 
+  if (value < 0)
+  {
+    // drive backward
+    value = -value;             // value has to be a positive channel value!
+    MOTOR_RIGHT_A_GPIO();       // set motor right A as GPIO Pin (high-level)
+    MOTOR_RIGHT_B_PWM();        // set motor right B as timer Pin (pwm signal)
+  }
+  else if (value > 0)
+  {
+    // drive forward
+    MOTOR_RIGHT_B_GPIO();       // set motor right B as GPIO Pin (high-level)
+    MOTOR_RIGHT_A_PWM();        // set motor right A as timer Pin (pwm signal)
+  }
+  else
+  {
+    // stop
+    value=0;
+
+  }
+  int16_t v = (uint16_t)(((FTM3_MODULO + 1) * ((uint32_t)value)) / MOTOR_MAX_VALUE);
+  FTM3_C0V = v;
 };
 
 void motorSetPwmLeft(int8_t value){
+  if (value > MOTOR_MAX_VALUE) value = MOTOR_MAX_VALUE;
+    if (value < -MOTOR_MAX_VALUE) value = -MOTOR_MAX_VALUE;
+    valueLeft = value;
+
+    if (value < 0)
+    {
+      // drive backward
+      value = -value;             // value has to be a positive channel value!
+      MOTOR_LEFT_B_GPIO();       // set motor right A as GPIO Pin (high-level)
+      MOTOR_LEFT_A_PWM();        // set motor right B as timer Pin (pwm signal)
+    }
+    else if (value > 0)
+    {
+      // drive forward
+      MOTOR_LEFT_A_GPIO();       // set motor right A as GPIO Pin (high-level)
+      MOTOR_LEFT_B_PWM();
+
+    }
+    else
+    {
+      // stop
+      value=0;
+
+    }
+    int16_t v = (uint16_t)(((FTM3_MODULO + 1) * ((uint32_t)value)) / MOTOR_MAX_VALUE);
+    FTM3_C1V = v;
+
+
 
 };
 

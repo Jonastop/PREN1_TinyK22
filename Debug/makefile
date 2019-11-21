@@ -11,6 +11,7 @@ RM := rm -rf
 -include Sources/utils/subdir.mk
 -include Sources/drive/subdir.mk
 -include Sources/com/subdir.mk
+-include Sources/PREN/subdir.mk
 -include Sources/subdir.mk
 -include Project_Settings/Startup_Code/subdir.mk
 -include subdir.mk
@@ -47,29 +48,29 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 SECONDARY_SIZE += \
-PREN1_Team31_TinyK22_v1.siz \
+PREN1_TinyK22.siz \
 
 
 # All Target
-all: PREN1_Team31_TinyK22_v1.elf secondary-outputs
+all: PREN1_TinyK22.elf secondary-outputs
 
 # Tool invocations
-PREN1_Team31_TinyK22_v1.elf: $(OBJS) $(USER_OBJS)
+PREN1_TinyK22.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross ARM C++ Linker'
-	arm-none-eabi-g++ -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections  -g3 -T "MK22FN512xxx12_flash.ld" -Xlinker --gc-sections -L"C:/Users/Marco/SharePoint/Bucher Jan I.BSCI.1701/PREN - TEAM31/07_Programmcode/PREN1_Team31_TinyK22_v1/Project_Settings/Linker_Files" -Wl,-Map,"PREN1_Team31_TinyK22_v1.map" -specs=nano.specs -specs=nosys.specs -o "PREN1_Team31_TinyK22_v1.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-g++ -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections  -g3 -T "MK22FN512xxx12_flash.ld" -Xlinker --gc-sections -L"C:/Users/jonas/git/PREN1_TinyK22/Project_Settings/Linker_Files" -Wl,-Map,"PREN1_TinyK22.map" -specs=nano.specs -specs=nosys.specs -o "PREN1_TinyK22.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-PREN1_Team31_TinyK22_v1.siz: PREN1_Team31_TinyK22_v1.elf
+PREN1_TinyK22.siz: PREN1_TinyK22.elf
 	@echo 'Invoking: Cross ARM GNU Print Size'
-	arm-none-eabi-size --format=berkeley "PREN1_Team31_TinyK22_v1.elf"
+	arm-none-eabi-size --format=berkeley "PREN1_TinyK22.elf"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(CC_DEPS)$(C++_DEPS)$(OBJS)$(C_UPPER_DEPS)$(CXX_DEPS)$(SECONDARY_SIZE)$(ASM_DEPS)$(S_UPPER_DEPS)$(C_DEPS)$(CPP_DEPS) PREN1_Team31_TinyK22_v1.elf
+	-$(RM) $(CC_DEPS)$(C++_DEPS)$(OBJS)$(C_UPPER_DEPS)$(CXX_DEPS)$(SECONDARY_SIZE)$(ASM_DEPS)$(S_UPPER_DEPS)$(C_DEPS)$(CPP_DEPS) PREN1_TinyK22.elf
 	-@echo ' '
 
 secondary-outputs: $(SECONDARY_SIZE)
