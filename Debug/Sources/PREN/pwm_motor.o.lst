@@ -1,0 +1,336 @@
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"pwm_motor.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.bss.valueRight,"aw",%nobits
+  20              	valueRight:
+  21 0000 00       		.space	1
+  22              		.section	.bss.valueLeft,"aw",%nobits
+  25              	valueLeft:
+  26 0000 00       		.space	1
+  27              		.section	.text.motorIncrementPwmRight,"ax",%progbits
+  28              		.align	1
+  29              		.global	motorIncrementPwmRight
+  30              		.syntax unified
+  31              		.thumb
+  32              		.thumb_func
+  33              		.fpu fpv4-sp-d16
+  35              	motorIncrementPwmRight:
+  36              	.LFB125:
+  37              		.file 1 "../Sources/PREN/pwm_motor.c"
+   1:../Sources/PREN/pwm_motor.c **** /*
+   2:../Sources/PREN/pwm_motor.c ****  * pwm_motor.c
+   3:../Sources/PREN/pwm_motor.c ****  *
+   4:../Sources/PREN/pwm_motor.c ****  *  Created on: 15.11.2019
+   5:../Sources/PREN/pwm_motor.c ****  *      Author: jonas
+   6:../Sources/PREN/pwm_motor.c ****  */
+   7:../Sources/PREN/pwm_motor.c **** 
+   8:../Sources/PREN/pwm_motor.c **** #include "platform.h"
+   9:../Sources/PREN/pwm_motor.c **** 
+  10:../Sources/PREN/pwm_motor.c **** // configuration from GPIO to FTM-Mode and vice versa
+  11:../Sources/PREN/pwm_motor.c **** #define MOTOR_RIGHT_PWM()           (PORTC_PCR8 = PORT_PCR_MUX(3))  // PTC8: FTM3_CH4
+  12:../Sources/PREN/pwm_motor.c **** #define MOTOR_RIGHT_GPIO()          (PORTC_PCR8 = PORT_PCR_MUX(1))  // PTC8: GPIO
+  13:../Sources/PREN/pwm_motor.c **** 
+  14:../Sources/PREN/pwm_motor.c **** #define MOTOR_LEFT_A_PWM()          (PORTC_PCR9 = PORT_PCR_MUX(3))  // PTC9: FTM3_CH5
+  15:../Sources/PREN/pwm_motor.c **** #define MOTOR_LEFT_A_GPIO()         (PORTC_PCR9 = PORT_PCR_MUX(1))  // PTC9: GPIO
+  16:../Sources/PREN/pwm_motor.c **** 
+  17:../Sources/PREN/pwm_motor.c **** static int8_t valueRight;
+  18:../Sources/PREN/pwm_motor.c **** static int8_t valueLeft;
+  19:../Sources/PREN/pwm_motor.c **** 
+  20:../Sources/PREN/pwm_motor.c **** 
+  21:../Sources/PREN/pwm_motor.c **** void motorIncrementPwmRight(int8_t value){
+  38              		.loc 1 21 0
+  39              		.cfi_startproc
+  40              		@ args = 0, pretend = 0, frame = 8
+  41              		@ frame_needed = 1, uses_anonymous_args = 0
+  42              		@ link register save eliminated.
+  43 0000 80B4     		push	{r7}
+  44              		.cfi_def_cfa_offset 4
+  45              		.cfi_offset 7, -4
+  46 0002 83B0     		sub	sp, sp, #12
+  47              		.cfi_def_cfa_offset 16
+  48 0004 00AF     		add	r7, sp, #0
+  49              		.cfi_def_cfa_register 7
+  50 0006 0346     		mov	r3, r0
+  51 0008 FB71     		strb	r3, [r7, #7]
+  22:../Sources/PREN/pwm_motor.c **** 
+  23:../Sources/PREN/pwm_motor.c **** };
+  52              		.loc 1 23 0
+  53 000a 00BF     		nop
+  54 000c 0C37     		adds	r7, r7, #12
+  55              		.cfi_def_cfa_offset 4
+  56 000e BD46     		mov	sp, r7
+  57              		.cfi_def_cfa_register 13
+  58              		@ sp needed
+  59 0010 5DF8047B 		ldr	r7, [sp], #4
+  60              		.cfi_restore 7
+  61              		.cfi_def_cfa_offset 0
+  62 0014 7047     		bx	lr
+  63              		.cfi_endproc
+  64              	.LFE125:
+  66              		.section	.text.motorIncrementPwmLeft,"ax",%progbits
+  67              		.align	1
+  68              		.global	motorIncrementPwmLeft
+  69              		.syntax unified
+  70              		.thumb
+  71              		.thumb_func
+  72              		.fpu fpv4-sp-d16
+  74              	motorIncrementPwmLeft:
+  75              	.LFB126:
+  24:../Sources/PREN/pwm_motor.c **** 
+  25:../Sources/PREN/pwm_motor.c **** void motorIncrementPwmLeft(int8_t value){
+  76              		.loc 1 25 0
+  77              		.cfi_startproc
+  78              		@ args = 0, pretend = 0, frame = 8
+  79              		@ frame_needed = 1, uses_anonymous_args = 0
+  80              		@ link register save eliminated.
+  81 0000 80B4     		push	{r7}
+  82              		.cfi_def_cfa_offset 4
+  83              		.cfi_offset 7, -4
+  84 0002 83B0     		sub	sp, sp, #12
+  85              		.cfi_def_cfa_offset 16
+  86 0004 00AF     		add	r7, sp, #0
+  87              		.cfi_def_cfa_register 7
+  88 0006 0346     		mov	r3, r0
+  89 0008 FB71     		strb	r3, [r7, #7]
+  26:../Sources/PREN/pwm_motor.c **** 
+  27:../Sources/PREN/pwm_motor.c **** };
+  90              		.loc 1 27 0
+  91 000a 00BF     		nop
+  92 000c 0C37     		adds	r7, r7, #12
+  93              		.cfi_def_cfa_offset 4
+  94 000e BD46     		mov	sp, r7
+  95              		.cfi_def_cfa_register 13
+  96              		@ sp needed
+  97 0010 5DF8047B 		ldr	r7, [sp], #4
+  98              		.cfi_restore 7
+  99              		.cfi_def_cfa_offset 0
+ 100 0014 7047     		bx	lr
+ 101              		.cfi_endproc
+ 102              	.LFE126:
+ 104              		.section	.text.motorSetPwmRight,"ax",%progbits
+ 105              		.align	1
+ 106              		.global	motorSetPwmRight
+ 107              		.syntax unified
+ 108              		.thumb
+ 109              		.thumb_func
+ 110              		.fpu fpv4-sp-d16
+ 112              	motorSetPwmRight:
+ 113              	.LFB127:
+  28:../Sources/PREN/pwm_motor.c **** 
+  29:../Sources/PREN/pwm_motor.c **** void motorSetPwmRight(int8_t value){
+ 114              		.loc 1 29 0
+ 115              		.cfi_startproc
+ 116              		@ args = 0, pretend = 0, frame = 8
+ 117              		@ frame_needed = 1, uses_anonymous_args = 0
+ 118              		@ link register save eliminated.
+ 119 0000 80B4     		push	{r7}
+ 120              		.cfi_def_cfa_offset 4
+ 121              		.cfi_offset 7, -4
+ 122 0002 83B0     		sub	sp, sp, #12
+ 123              		.cfi_def_cfa_offset 16
+ 124 0004 00AF     		add	r7, sp, #0
+ 125              		.cfi_def_cfa_register 7
+ 126 0006 0346     		mov	r3, r0
+ 127 0008 FB71     		strb	r3, [r7, #7]
+  30:../Sources/PREN/pwm_motor.c **** 
+  31:../Sources/PREN/pwm_motor.c **** };
+ 128              		.loc 1 31 0
+ 129 000a 00BF     		nop
+ 130 000c 0C37     		adds	r7, r7, #12
+ 131              		.cfi_def_cfa_offset 4
+ 132 000e BD46     		mov	sp, r7
+ 133              		.cfi_def_cfa_register 13
+ 134              		@ sp needed
+ 135 0010 5DF8047B 		ldr	r7, [sp], #4
+ 136              		.cfi_restore 7
+ 137              		.cfi_def_cfa_offset 0
+ 138 0014 7047     		bx	lr
+ 139              		.cfi_endproc
+ 140              	.LFE127:
+ 142              		.section	.text.motorSetPwmLeft,"ax",%progbits
+ 143              		.align	1
+ 144              		.global	motorSetPwmLeft
+ 145              		.syntax unified
+ 146              		.thumb
+ 147              		.thumb_func
+ 148              		.fpu fpv4-sp-d16
+ 150              	motorSetPwmLeft:
+ 151              	.LFB128:
+  32:../Sources/PREN/pwm_motor.c **** 
+  33:../Sources/PREN/pwm_motor.c **** void motorSetPwmLeft(int8_t value){
+ 152              		.loc 1 33 0
+ 153              		.cfi_startproc
+ 154              		@ args = 0, pretend = 0, frame = 8
+ 155              		@ frame_needed = 1, uses_anonymous_args = 0
+ 156              		@ link register save eliminated.
+ 157 0000 80B4     		push	{r7}
+ 158              		.cfi_def_cfa_offset 4
+ 159              		.cfi_offset 7, -4
+ 160 0002 83B0     		sub	sp, sp, #12
+ 161              		.cfi_def_cfa_offset 16
+ 162 0004 00AF     		add	r7, sp, #0
+ 163              		.cfi_def_cfa_register 7
+ 164 0006 0346     		mov	r3, r0
+ 165 0008 FB71     		strb	r3, [r7, #7]
+  34:../Sources/PREN/pwm_motor.c **** 
+  35:../Sources/PREN/pwm_motor.c **** };
+ 166              		.loc 1 35 0
+ 167 000a 00BF     		nop
+ 168 000c 0C37     		adds	r7, r7, #12
+ 169              		.cfi_def_cfa_offset 4
+ 170 000e BD46     		mov	sp, r7
+ 171              		.cfi_def_cfa_register 13
+ 172              		@ sp needed
+ 173 0010 5DF8047B 		ldr	r7, [sp], #4
+ 174              		.cfi_restore 7
+ 175              		.cfi_def_cfa_offset 0
+ 176 0014 7047     		bx	lr
+ 177              		.cfi_endproc
+ 178              	.LFE128:
+ 180              		.section	.text.motorInit,"ax",%progbits
+ 181              		.align	1
+ 182              		.global	motorInit
+ 183              		.syntax unified
+ 184              		.thumb
+ 185              		.thumb_func
+ 186              		.fpu fpv4-sp-d16
+ 188              	motorInit:
+ 189              	.LFB129:
+  36:../Sources/PREN/pwm_motor.c **** 
+  37:../Sources/PREN/pwm_motor.c **** void motorInit(void){
+ 190              		.loc 1 37 0
+ 191              		.cfi_startproc
+ 192              		@ args = 0, pretend = 0, frame = 0
+ 193              		@ frame_needed = 1, uses_anonymous_args = 0
+ 194              		@ link register save eliminated.
+ 195 0000 80B4     		push	{r7}
+ 196              		.cfi_def_cfa_offset 4
+ 197              		.cfi_offset 7, -4
+ 198 0002 00AF     		add	r7, sp, #0
+ 199              		.cfi_def_cfa_register 7
+  38:../Sources/PREN/pwm_motor.c ****   // Configure the pin direction of the 4 pins as output.
+  39:../Sources/PREN/pwm_motor.c ****    GPIOC_PDDR |= 1<<8;
+ 200              		.loc 1 39 0
+ 201 0004 154B     		ldr	r3, .L6
+ 202 0006 5B69     		ldr	r3, [r3, #20]
+ 203 0008 144A     		ldr	r2, .L6
+ 204 000a 43F48073 		orr	r3, r3, #256
+ 205 000e 5361     		str	r3, [r2, #20]
+  40:../Sources/PREN/pwm_motor.c ****    GPIOC_PDDR |= 1<<9;
+ 206              		.loc 1 40 0
+ 207 0010 124B     		ldr	r3, .L6
+ 208 0012 5B69     		ldr	r3, [r3, #20]
+ 209 0014 114A     		ldr	r2, .L6
+ 210 0016 43F40073 		orr	r3, r3, #512
+ 211 001a 5361     		str	r3, [r2, #20]
+  41:../Sources/PREN/pwm_motor.c **** 
+  42:../Sources/PREN/pwm_motor.c ****    // Set pin value of the pins to '1'
+  43:../Sources/PREN/pwm_motor.c ****    GPIOC_PDOR |= 1<<8 | 1<<9;
+ 212              		.loc 1 43 0
+ 213 001c 0F4B     		ldr	r3, .L6
+ 214 001e 1B68     		ldr	r3, [r3]
+ 215 0020 0E4A     		ldr	r2, .L6
+ 216 0022 43F44073 		orr	r3, r3, #768
+ 217 0026 1360     		str	r3, [r2]
+  44:../Sources/PREN/pwm_motor.c **** 
+  45:../Sources/PREN/pwm_motor.c ****    // configures the pin muxing of both pins as GPIO-Pin.
+  46:../Sources/PREN/pwm_motor.c ****    // the output level will be '1' because of the configuration above.
+  47:../Sources/PREN/pwm_motor.c ****    (PORTC_PCR8 = PORT_PCR_MUX(1));
+ 218              		.loc 1 47 0
+ 219 0028 0D4B     		ldr	r3, .L6+4
+ 220 002a 4FF48072 		mov	r2, #256
+ 221 002e 1A62     		str	r2, [r3, #32]
+  48:../Sources/PREN/pwm_motor.c ****    (PORTC_PCR9 = PORT_PCR_MUX(1));
+ 222              		.loc 1 48 0
+ 223 0030 0B4B     		ldr	r3, .L6+4
+ 224 0032 4FF48072 		mov	r2, #256
+ 225 0036 5A62     		str	r2, [r3, #36]
+  49:../Sources/PREN/pwm_motor.c **** 
+  50:../Sources/PREN/pwm_motor.c ****    // configure both channels as edge aligned PWM with high-true pulses
+  51:../Sources/PREN/pwm_motor.c ****    FTM3_C0SC |= FTM_CnSC_ELSA(0) | FTM_CnSC_ELSB(1) | FTM_CnSC_MSB(1);
+ 226              		.loc 1 51 0
+ 227 0038 0A4B     		ldr	r3, .L6+8
+ 228 003a DB68     		ldr	r3, [r3, #12]
+ 229 003c 094A     		ldr	r2, .L6+8
+ 230 003e 43F02803 		orr	r3, r3, #40
+ 231 0042 D360     		str	r3, [r2, #12]
+  52:../Sources/PREN/pwm_motor.c ****    FTM3_C1SC |= FTM_CnSC_ELSA(0) | FTM_CnSC_ELSB(1) | FTM_CnSC_MSB(1);
+ 232              		.loc 1 52 0
+ 233 0044 074B     		ldr	r3, .L6+8
+ 234 0046 5B69     		ldr	r3, [r3, #20]
+ 235 0048 064A     		ldr	r2, .L6+8
+ 236 004a 43F02803 		orr	r3, r3, #40
+ 237 004e 5361     		str	r3, [r2, #20]
+  53:../Sources/PREN/pwm_motor.c **** };
+ 238              		.loc 1 53 0
+ 239 0050 00BF     		nop
+ 240 0052 BD46     		mov	sp, r7
+ 241              		.cfi_def_cfa_register 13
+ 242              		@ sp needed
+ 243 0054 5DF8047B 		ldr	r7, [sp], #4
+ 244              		.cfi_restore 7
+ 245              		.cfi_def_cfa_offset 0
+ 246 0058 7047     		bx	lr
+ 247              	.L7:
+ 248 005a 00BF     		.align	2
+ 249              	.L6:
+ 250 005c 80F00F40 		.word	1074786432
+ 251 0060 00B00440 		.word	1074049024
+ 252 0064 00600240 		.word	1073897472
+ 253              		.cfi_endproc
+ 254              	.LFE129:
+ 256              		.text
+ 257              	.Letext0:
+ 258              		.file 2 "c:\\mc devenv\\toolchain\\arm-none-eabi\\include\\machine\\_default_types.h"
+ 259              		.file 3 "c:\\mc devenv\\toolchain\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 260              		.file 4 "../Includes/core_cm4.h"
+ 261              		.file 5 "../Includes/system_MK22F51212.h"
+ 262              		.file 6 "../Includes/MK22F51212.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 pwm_motor.c
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:20     .bss.valueRight:00000000 valueRight
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:21     .bss.valueRight:00000000 $d
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:25     .bss.valueLeft:00000000 valueLeft
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:26     .bss.valueLeft:00000000 $d
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:28     .text.motorIncrementPwmRight:00000000 $t
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:35     .text.motorIncrementPwmRight:00000000 motorIncrementPwmRight
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:67     .text.motorIncrementPwmLeft:00000000 $t
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:74     .text.motorIncrementPwmLeft:00000000 motorIncrementPwmLeft
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:105    .text.motorSetPwmRight:00000000 $t
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:112    .text.motorSetPwmRight:00000000 motorSetPwmRight
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:143    .text.motorSetPwmLeft:00000000 $t
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:150    .text.motorSetPwmLeft:00000000 motorSetPwmLeft
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:181    .text.motorInit:00000000 $t
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:188    .text.motorInit:00000000 motorInit
+C:\Users\RICCAR~1\AppData\Local\Temp\ccFV0j1Y.s:250    .text.motorInit:0000005c $d
+                           .group:00000000 wm4.0.001069cc77356fa6a5cd70b238a4b851
+                           .group:00000000 wm4.MK22F51212.h.96.792c303daa596f91c029224edd7c60aa
+                           .group:00000000 wm4._newlib_version.h.4.3572908597b70d672d181fc7fc501c19
+                           .group:00000000 wm4.features.h.33.cf97d4c9a045ebab6d282f6356e11363
+                           .group:00000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:00000000 wm4._intsup.h.10.cce27fed8484c08a33f522034c30d2b5
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.MK22F51212.h.109.eeee73bf5f54e3f06177795004b95e22
+                           .group:00000000 wm4.core_cm4.h.43.f75e2f71b2e33f7a3db429cd8b0cae9e
+                           .group:00000000 wm4.core_cmInstr.h.39.addda81f1f3453ba31dd54fc5b6fcee8
+                           .group:00000000 wm4.core_cmSimd.h.43.c355993beb49ccd10586af5b1cfe5aee
+                           .group:00000000 wm4.core_cm4.h.201.a59e218d30e39d114c8962bbad645c74
+                           .group:00000000 wm4.system_MK22F51212.h.94.09b5fd63c227fb82ca8c370fba9e2334
+                           .group:00000000 wm4.MK22F51212.h.369.5a9c5aa32d240e03ff494f1c769cfadf
+                           .group:00000000 wm4.platform.h.20.5dba9aa78ee93a87b4214fc940da3bb4
+
+NO UNDEFINED SYMBOLS

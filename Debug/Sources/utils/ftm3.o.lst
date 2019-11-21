@@ -1587,11 +1587,11 @@
   40 0008 FB71     		strb	r3, [r7, #7]
 1549:../Includes/core_cm4.h ****   NVIC->ISER[(((uint32_t)(int32_t)IRQn) >> 5UL)] = (uint32_t)(1UL << (((uint32_t)(int32_t)IRQn) & 0
   41              		.loc 1 1549 0
-  42 000a 0949     		ldr	r1, .L2
-  43 000c 97F90730 		ldrsb	r3, [r7, #7]
-  44 0010 5B09     		lsrs	r3, r3, #5
-  45 0012 FA79     		ldrb	r2, [r7, #7]	@ zero_extendqisi2
-  46 0014 02F01F02 		and	r2, r2, #31
+  42 000a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+  43 000c 03F01F02 		and	r2, r3, #31
+  44 0010 0749     		ldr	r1, .L2
+  45 0012 97F90730 		ldrsb	r3, [r7, #7]
+  46 0016 5B09     		lsrs	r3, r3, #5
   47 0018 0120     		movs	r0, #1
   48 001a 00FA02F2 		lsl	r2, r0, r2
   49 001e 41F82320 		str	r2, [r1, r3, lsl #2]
@@ -1723,12 +1723,12 @@
   95 0012 0BDA     		bge	.L5
 1632:../Includes/core_cm4.h ****     SCB->SHP[(((uint32_t)(int32_t)IRQn) & 0xFUL)-4UL] = (uint8_t)((priority << (8 - __NVIC_PRIO_BIT
   96              		.loc 1 1632 0
-  97 0014 0D49     		ldr	r1, .L8
-  98 0016 FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
-  99 0018 03F00F03 		and	r3, r3, #15
- 100 001c 043B     		subs	r3, r3, #4
- 101 001e 3A68     		ldr	r2, [r7]
- 102 0020 D2B2     		uxtb	r2, r2
+  97 0014 3B68     		ldr	r3, [r7]
+  98 0016 DAB2     		uxtb	r2, r3
+  99 0018 0C49     		ldr	r1, .L8
+ 100 001a FB79     		ldrb	r3, [r7, #7]	@ zero_extendqisi2
+ 101 001c 03F00F03 		and	r3, r3, #15
+ 102 0020 043B     		subs	r3, r3, #4
  103 0022 1201     		lsls	r2, r2, #4
  104 0024 D2B2     		uxtb	r2, r2
  105 0026 0B44     		add	r3, r3, r1
@@ -1743,10 +1743,10 @@
  109              	.L5:
 1635:../Includes/core_cm4.h ****   }
  110              		.loc 1 1635 0
- 111 002c 0849     		ldr	r1, .L8+4
- 112 002e 97F90730 		ldrsb	r3, [r7, #7]
- 113 0032 3A68     		ldr	r2, [r7]
- 114 0034 D2B2     		uxtb	r2, r2
+ 111 002c 3B68     		ldr	r3, [r7]
+ 112 002e DAB2     		uxtb	r2, r3
+ 113 0030 0749     		ldr	r1, .L8+4
+ 114 0032 97F90730 		ldrsb	r3, [r7, #7]
  115 0036 1201     		lsls	r2, r2, #4
  116 0038 D2B2     		uxtb	r2, r2
  117 003a 0B44     		add	r3, r3, r1
@@ -2019,11 +2019,11 @@
   63:../Sources/utils/ftm3.c ****   // todo #9.01 set clockgating for FTM3
   64:../Sources/utils/ftm3.c ****   SIM_SCGC6 |= SIM_SCGC6_FTM3(1);
  328              		.loc 2 64 0
- 329 0004 0F49     		ldr	r1, .L25
- 330 0006 0F4B     		ldr	r3, .L25
- 331 0008 03F58153 		add	r3, r3, #4128
- 332 000c 1C33     		adds	r3, r3, #28
- 333 000e 1B68     		ldr	r3, [r3]
+ 329 0004 0F4B     		ldr	r3, .L25
+ 330 0006 03F58153 		add	r3, r3, #4128
+ 331 000a 1C33     		adds	r3, r3, #28
+ 332 000c 1B68     		ldr	r3, [r3]
+ 333 000e 0D49     		ldr	r1, .L25
  334 0010 43F04002 		orr	r2, r3, #64
  335 0014 01F58153 		add	r3, r1, #4128
  336 0018 1C33     		adds	r3, r3, #28
@@ -2039,9 +2039,9 @@
   69:../Sources/utils/ftm3.c ****   // todo #9.02 configure the timer with "system clock" as clocksource and with a "Prescaler" of 1 
   70:../Sources/utils/ftm3.c ****   FTM3_SC |= FTM_SC_CLKS(1) | FTM_SC_PS(0);
  342              		.loc 2 70 0
- 343 0024 084A     		ldr	r2, .L25+4
- 344 0026 084B     		ldr	r3, .L25+4
- 345 0028 1B68     		ldr	r3, [r3]
+ 343 0024 084B     		ldr	r3, .L25+4
+ 344 0026 1B68     		ldr	r3, [r3]
+ 345 0028 074A     		ldr	r2, .L25+4
  346 002a 43F00803 		orr	r3, r3, #8
  347 002e 1360     		str	r3, [r2]
   71:../Sources/utils/ftm3.c **** 
@@ -2069,37 +2069,36 @@
  364              	.LFE127:
  366              		.text
  367              	.Letext0:
- 368              		.file 3 "c:\\program files (x86)\\gnu tools arm embedded\\6 2017-q2-update\\arm-none-eabi\\include
- 369              		.file 4 "c:\\program files (x86)\\gnu tools arm embedded\\6 2017-q2-update\\arm-none-eabi\\include
+ 368              		.file 3 "c:\\mc devenv\\toolchain\\arm-none-eabi\\include\\machine\\_default_types.h"
+ 369              		.file 4 "c:\\mc devenv\\toolchain\\arm-none-eabi\\include\\sys\\_stdint.h"
  370              		.file 5 "../Includes/MK22F51212.h"
  371              		.file 6 "../Includes/system_MK22F51212.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 ftm3.c
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:18     .text.NVIC_EnableIRQ:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:24     .text.NVIC_EnableIRQ:00000000 NVIC_EnableIRQ
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:64     .text.NVIC_EnableIRQ:00000030 $d
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:69     .text.NVIC_SetPriority:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:75     .text.NVIC_SetPriority:00000000 NVIC_SetPriority
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:134    .text.NVIC_SetPriority:0000004c $d
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:140    .text.Default_Handler_FTM3:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:147    .text.Default_Handler_FTM3:00000000 Default_Handler_FTM3
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:147    .text.Default_Handler_FTM3:00000000 FTM3TOF_IRQHandler
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH7_IRQHandler
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH6_IRQHandler
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH5_IRQHandler
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH4_IRQHandler
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH3_IRQHandler
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH2_IRQHandler
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH1_IRQHandler
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH0_IRQHandler
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:198    .text.FTM3_IRQHandler:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:205    .text.FTM3_IRQHandler:00000000 FTM3_IRQHandler
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:304    .text.FTM3_IRQHandler:00000098 $d
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:309    .text.ftm3Init:00000000 $t
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:316    .text.ftm3Init:00000000 ftm3Init
-C:\Users\jonas\AppData\Local\Temp\ccvAGssz.s:361    .text.ftm3Init:00000044 $d
-                     .debug_frame:00000010 $d
-                           .group:00000000 wm4.0.a6d4f739a788c67292a3ea0a48d10bd5
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:18     .text.NVIC_EnableIRQ:00000000 $t
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:24     .text.NVIC_EnableIRQ:00000000 NVIC_EnableIRQ
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:64     .text.NVIC_EnableIRQ:00000030 $d
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:69     .text.NVIC_SetPriority:00000000 $t
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:75     .text.NVIC_SetPriority:00000000 NVIC_SetPriority
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:134    .text.NVIC_SetPriority:0000004c $d
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:140    .text.Default_Handler_FTM3:00000000 $t
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:147    .text.Default_Handler_FTM3:00000000 Default_Handler_FTM3
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:147    .text.Default_Handler_FTM3:00000000 FTM3TOF_IRQHandler
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH7_IRQHandler
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH6_IRQHandler
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH5_IRQHandler
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH4_IRQHandler
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH3_IRQHandler
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH2_IRQHandler
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH1_IRQHandler
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:147    .text.Default_Handler_FTM3:00000000 FTM3CH0_IRQHandler
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:198    .text.FTM3_IRQHandler:00000000 $t
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:205    .text.FTM3_IRQHandler:00000000 FTM3_IRQHandler
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:304    .text.FTM3_IRQHandler:00000098 $d
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:309    .text.ftm3Init:00000000 $t
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:316    .text.ftm3Init:00000000 ftm3Init
+C:\Users\RICCAR~1\AppData\Local\Temp\ccXsHRMV.s:361    .text.ftm3Init:00000044 $d
+                           .group:00000000 wm4.0.001069cc77356fa6a5cd70b238a4b851
                            .group:00000000 wm4.MK22F51212.h.96.792c303daa596f91c029224edd7c60aa
                            .group:00000000 wm4._newlib_version.h.4.3572908597b70d672d181fc7fc501c19
                            .group:00000000 wm4.features.h.33.cf97d4c9a045ebab6d282f6356e11363
